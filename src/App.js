@@ -16,7 +16,6 @@ class App extends Component {
     this.worker.onmessage = (e) => {
       if(e.data.ok){
           const command = e.data.cmd
-
       }else{
           alert(e.data.msg)
       }
@@ -107,7 +106,52 @@ class App extends Component {
           </Tab.Pane>
       )
 
-        }
+        },
+        {menuItem: "Системы с постоянными коэф ",render : () => (
+                <div className="App">
+                    <Formik initialValues={{number:3,vars:['x','y','z'],vals:{}}}
+                            onSubmit={(values)=>{
+                                console.log(values);
+                                self.worker.postMessage({...values,cmd:1})
+                            }}
+                        render = {({values})=>{
+                            return (
+                                <Form>
+                                    <Field component="select" name="number">
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                    </Field>
+                                    {values.vars.map((variable,index) => {
+                                        if (index < values.number){
+                                            return (
+                                                <div key={index}>
+                                                    {`${values.vars[index]}' = `}
+                                                    {
+                                                        values.vars.map((variable,ind) =>{
+                                                            if (ind < values.number){
+                                                                return (
+                                                                        <span key={index*values.number + ind}>
+                                                                            <Field type="text" name={`vals.${index*values.number + ind}`} style={{width:'50px'}}/>
+                                                                            {`${values.vars[ind]} `}
+                                                                            {ind !== values.number - 1 ? '+ ':''}
+                                                                        </span>
+                                                                )
+                                                            }
+                                                        })
+                                                    }
+                                                </div>
+                                            )
+                                        }
+                                    })}
+                                    <Button type="submit">
+                                        Submit
+                                    </Button>
+                                </Form>
+                            )
+                        }}/>
+                </div>
+            )}
     ];
     return (
       <div>
