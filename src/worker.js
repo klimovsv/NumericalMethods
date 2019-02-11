@@ -72,8 +72,8 @@ self.addEventListener('message',(e) => {
             }
 
             const start_time = values.start;
-            const end_time = start_time+10;
-            const steps = 1000;
+            const end_time = start_time+1;
+            const steps = 100;
             const step = (end_time-start_time)/steps;
 
             let time = [];
@@ -96,17 +96,22 @@ self.addEventListener('message',(e) => {
                 result.push(next)
             }
 
-            console.log(user);
-            const diff = [];
+            // console.log(user);
+            const user_res = [];
             for(let i = 0 ; i < steps; i++){
                 let tmp = [];
                 for(let j = 0 ; j < n; j++){
-                    tmp.push(Math.abs(result[i][j] - user[j](time[i],[])))
+                    tmp.push(user[j](time[i],[]))
                 }
-                diff.push(tmp)
+                user_res.push(tmp)
             }
+            let diff = user_res.map((arr,ind) => {
+                return arr.map((el,i) => {
+                    return Math.abs(el - result[ind][i])
+                })
+            });
             console.log(result,time,diff);
-            postMessage({ok:true,cmd:command,data:e.data,result:result});
+            postMessage({ok:true,cmd:command,data:e.data,result:result,user:user_res,diff:diff,time:time});
             break;
         default:
             postMessage({ok:false,msg:"unsupported command",cmd: command})

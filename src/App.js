@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import './App.css';
 import {Field, Form, Formik} from "formik";
-import worker from "./worker.js"
-import WebWorker from "./workerSetup";
 import {Button, Tab} from "semantic-ui-react"
+import {CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis} from "recharts"
 
 // eslint-disable-next-line
 let MyWorker = require("worker-loader!./worker.js");
@@ -11,16 +10,18 @@ let MyWorker = require("worker-loader!./worker.js");
 class App extends Component {
   constructor(props){
     super(props);
+    this.state = {}
   }
 
   componentDidMount() {
       this.worker = new MyWorker();
-    // this.worker = new WebWorker(worker);
     this.worker.onmessage = (e) => {
       if(e.data.ok){
           const command = e.data.cmd;
           switch (command) {
               case 3:
+                  this.state['3'] = e.data;
+                  this.forceUpdate();
                   break;
               default:
                   alert("not implemented")
@@ -34,6 +35,26 @@ class App extends Component {
   componentWillUnmount() {
     this.worker.terminate();
   }
+
+  zip = (time , values , names) => {
+      return time.map((t,i) => {
+          const obj = {
+              time : t.toFixed(3)
+          };
+          names.forEach((name,ind) => {
+              obj[name] = values[i][ind]
+          });
+          return obj
+      })
+  };
+
+  concat = (arrays) => {
+      let newArr = [];
+      arrays[0].forEach((cart , i) => {
+          newArr.push(arrays.map((arr) => arr[i]).reduce((a,b) => a.concat(b)))
+      })
+      return newArr
+  };
 
   render() {
     const self = this;
@@ -177,7 +198,29 @@ class App extends Component {
                                 </Form>
                             )
                         }}/>
-
+                    {!!this.state['3'] ?(()=>{
+                        const data = this.state['3'];
+                        const time = data.time;
+                        const diff = data.diff;
+                        const user = data.user;
+                        const res = data.result;
+                        const conc = this.concat([diff,user,res]);
+                        // console.log(conc)
+                        const zipped = this.zip(time,conc,["dx","dy","x","y","xr","yr"]);
+                        return (
+                            <LineChart width={730} height={250} data={zipped}
+                                       margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="time" />
+                                <YAxis />
+                                <Tooltip />
+                                <Legend />
+                                <Line type="linear" dot={false} dataKey="x" stroke="#8884d8" />
+                                <Line type="linear" dot={false} dataKey="xr" stroke="#82ca9d" />
+                                <Line type="linear" dot={false} dataKey="dx" stroke="#82ca9d" />
+                            </LineChart>
+                        )
+                    })() : null}
                 </div>
             )}
     ];
