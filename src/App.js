@@ -1,21 +1,30 @@
 import React, { Component } from 'react';
 import './App.css';
-import { Charts, ChartContainer, ChartRow, YAxis, LineChart } from 'react-timeseries-charts';
-import {ErrorMessage, Field, Form, Formik} from "formik";
+import {Field, Form, Formik} from "formik";
 import worker from "./worker.js"
 import WebWorker from "./workerSetup";
-import {Button, Header, Icon, Modal, Tab} from "semantic-ui-react"
+import {Button, Tab} from "semantic-ui-react"
 
+// eslint-disable-next-line
+let MyWorker = require("worker-loader!./worker.js");
+//
 class App extends Component {
   constructor(props){
     super(props);
   }
 
   componentDidMount() {
-    this.worker = new WebWorker(worker);
+      this.worker = new MyWorker();
+    // this.worker = new WebWorker(worker);
     this.worker.onmessage = (e) => {
       if(e.data.ok){
-          const command = e.data.cmd
+          const command = e.data.cmd;
+          switch (command) {
+              case 3:
+                  break;
+              default:
+                  alert("not implemented")
+          }
       }else{
           alert(e.data.msg)
       }
@@ -109,19 +118,19 @@ class App extends Component {
         },
         {menuItem: "Системы с постоянными коэф ",render : () => (
                 <div className="App">
-                    <Formik initialValues={{number:3,vars:['x','y','z'],vals:{}}}
+                    <Formik initialValues={{number:3,vars:['x','y','z'],vals:{},start:0}}
                             onSubmit={(values)=>{
                                 console.log(values);
-                                self.worker.postMessage({...values,cmd:1})
+                                self.worker.postMessage({...values,cmd:3})
                             }}
                         render = {({values})=>{
                             return (
                                 <Form>
                                     <Field component="select" name="number">
-                                        <option value="1">1</option>
                                         <option value="2">2</option>
                                         <option value="3">3</option>
                                     </Field>
+                                    <Field type="number" name="start"/>
                                     {values.vars.map((variable,index) => {
                                         if (index < values.number){
                                             return (
@@ -132,13 +141,31 @@ class App extends Component {
                                                             if (ind < values.number){
                                                                 return (
                                                                         <span key={index*values.number + ind}>
-                                                                            <Field type="text" name={`vals.${index*values.number + ind}`} style={{width:'50px'}}/>
+                                                                            <Field type="text" name={`vals.${index}.${ind}`} style={{width:'50px'}}/>
                                                                             {`${values.vars[ind]} `}
                                                                             {ind !== values.number - 1 ? '+ ':''}
                                                                         </span>
                                                                 )
                                                             }
                                                         })
+                                                    }
+                                                    {
+                                                        <span>
+                                                            {`${values.vars[index]}(${values.start}) = `}
+                                                            <Field type="text" name={`vals.start.${index}`}/>
+                                                        </span>
+                                                    }
+                                                </div>
+                                            )
+                                        }
+                                    })}
+                                    {values.vars.map((variable,index) => {
+                                        if (index < values.number){
+                                            return (
+                                                <div key={index}>
+                                                    {`${values.vars[index]} = `}
+                                                    {
+                                                        <Field type="text" name={`user.${index}`}/>
                                                     }
                                                 </div>
                                             )
@@ -150,6 +177,7 @@ class App extends Component {
                                 </Form>
                             )
                         }}/>
+
                 </div>
             )}
     ];
