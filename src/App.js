@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import './App.css';
 import {Field, Form, Formik} from "formik";
 import {Button, Tab} from "semantic-ui-react"
+import Validator from "./Validator.js";
+import * as math from 'mathjs';
 import {CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis} from "recharts"
 
 // eslint-disable-next-line
@@ -10,7 +12,14 @@ let MyWorker = require("worker-loader!./worker.js");
 class App extends Component {
   constructor(props){
     super(props);
-    this.state = {}
+    this.state = {};
+    this.testing()
+  }
+
+  testing(){
+      const node = math.parse(" ".trim());
+      console.log(node);
+      console.log(Validator.vilidate_vars(" ",[]))
   }
 
   componentDidMount() {
@@ -144,9 +153,9 @@ class App extends Component {
                                 console.log(values);
                                 self.worker.postMessage({...values,cmd:3})
                             }}
-                        render = {({values})=>{
+                            render = {({values,errors,touched})=>{
                             return (
-                                <Form>
+                                <Form >
                                     <Field component="select" name="number">
                                         <option value="2">2</option>
                                         <option value="3">3</option>
