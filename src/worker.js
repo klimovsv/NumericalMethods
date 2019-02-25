@@ -46,74 +46,251 @@ const runge_step = (t, start, functions, step_size) => {
     return k1.map((value,i)=>{
         return start[i] + (k1[i] + 2 * (k2[i]+k3[i]) + k4[i])/6
     })
-}
+};
+
+
+const runge_kutt = ({
+                        start_time,
+                        end_time,
+                        steps,
+                        initial,
+                        funcs,
+                        user_func,
+                        n })=>{
+    const step = (end_time-start_time)/steps;
+
+    let time = [];
+    for (let t = start_time ; t <= end_time; t+=step){
+        time.push(t)
+    }
+
+    let result = [];
+    for(let i = 0 ; i < n ; i ++) {
+        result.push(Number(initial[i]))
+    }
+    result = [result];
+
+    for (let i = 0 ; i < steps ; i++){
+        let next = runge_step(time[i],result[result.length-1],funcs,step);
+        result.push(next)
+    }
+
+    // console.log(user);
+    const user_res = [];
+    for(let i = 0 ; i < steps; i++){
+        let tmp = [];
+        for(let j = 0 ; j < n; j++){
+            tmp.push(user_func[j](time[i],[]))
+        }
+        user_res.push(tmp)
+    }
+    let diff = user_res.map((arr,ind) => {
+        return arr.map((el,i) => {
+            return Math.abs(el - result[ind][i])
+        })
+    });
+
+    return [result , user_res ,  diff ,time]
+};
+// комманды для систем
+// 10 - пост одн
+// 11 - пост неодн
+// 12 - непост одн
+// 13 - непост неодн
 
 // eslint-disable-next-line
 self.addEventListener('message',(e) => {
     const command = e.data.cmd;
     switch (command) {
         case 1:
-            postMessage({ok:true,msg:"success",cmd : command});
+            (()=>{
+                const values = e.data;
+
+                const mode = e.data.mode;
+                if (mode === 1){
+
+                }else{
+
+                }
+
+                postMessage({ok:true,msg:"success",cmd : command});
+            })();
             break;
-        case 3:
-            const values = e.data;
-            const n = values.number;
-            const vars = values.vars;
-            const functions = [];
-            const user_f = [];
-            const vals = values.vals;
-            for (let i = 0 ; i < n ; i++){
-                let fun = [];
-                for (let j = 0 ; j < n ; j++){
-                    fun.push(`${vals[i][j]}*${vars[j]}`)
+        case 10:
+            (() => {
+                const values = e.data;
+                const n = values.number;
+                const vars = values.vars;
+                const functions = [];
+                const user_f = [];
+                const vals = values.vals;
+
+                for (let i = 0 ; i < n ; i++){
+                    let fun = [];
+                    for (let j = 0 ; j < n ; j++){
+                        fun.push(`${vals[i][j]}*${vars[j]}`)
+                    }
+                    user_f.push(values.user[i]);
+                    functions.push(fun.join(" + "))
                 }
-                user_f.push(values.user[i]);
-                functions.push(fun.join(" + "))
-            }
 
-            const start_time = values.start;
-            const end_time = start_time+1;
-            const steps = 100;
-            const step = (end_time-start_time)/steps;
+                const funcs = generate_func(vars.slice(0,n),"t",functions);
+                const user = generate_func([],"t",user_f);
 
-            let time = [];
-            for (let t = start_time ; t <= end_time; t+=step){
-                time.push(t)
-            }
+                const [result, user_res , diff, time] = runge_kutt({
+                    start_time: values.start,
+                    end_time: values.start + 1,
+                    steps: 100,
+                    funcs: funcs,
+                    user_func:user,
+                    n: n,
+                    initial: vals.start
+                });
 
-            let result = [];
-            for(let i = 0 ; i < n ; i ++) {
-                result.push(Number(vals.start[i]))
-            }
-            result = [result];
-
-
-            // const result = [vals.start.slice(0,n)];
-            const funcs = generate_func(vars.slice(0,n),"t",functions);
-            const user = generate_func([],"t",user_f);
-            for (let i = 0 ; i < steps ; i++){
-                let next = runge_step(time[i],result[result.length-1],funcs,step);
-                result.push(next)
-            }
-
-            // console.log(user);
-            const user_res = [];
-            for(let i = 0 ; i < steps; i++){
-                let tmp = [];
-                for(let j = 0 ; j < n; j++){
-                    tmp.push(user[j](time[i],[]))
+                postMessage({
+                    ok:true,
+                    cmd:command,
+                    data:e.data,
+                    result:result,
+                    user:user_res,
+                    diff:diff,
+                    time:time
+                });
+            })();
+            break;
+        case 11:
+            (() => {
+                const values = e.data;
+                const n = values.number;
+                const vars = values.vars;
+                const functions = [];
+                const user_f = [];
+                const vals = values.vals;
+                console.log(vals);
+                for (let i = 0; i < n; i++) {
+                    let fun = [];
+                    for (let j = 0; j < n; j++) {
+                        fun.push(`${vals[i][j]}*${vars[j]}`)
+                    }
+                    fun.push(vals[i][n]);
+                    user_f.push(values.user[i]);
+                    functions.push(fun.join(" + "))
                 }
-                user_res.push(tmp)
-            }
-            let diff = user_res.map((arr,ind) => {
-                return arr.map((el,i) => {
-                    return Math.abs(el - result[ind][i])
-                })
-            });
-            console.log(result,time,diff);
-            postMessage({ok:true,cmd:command,data:e.data,result:result,user:user_res,diff:diff,time:time});
+
+                console.log(functions);
+
+                const funcs = generate_func(vars.slice(0, n), "t", functions);
+                const user = generate_func([], "t", user_f);
+
+                const [result, user_res, diff, time] = runge_kutt({
+                    start_time: values.start,
+                    end_time: values.start + 1,
+                    steps: 100,
+                    funcs: funcs,
+                    user_func: user,
+                    n: n,
+                    initial: vals.start
+                });
+
+                postMessage({
+                    ok: true,
+                    cmd: command,
+                    data: e.data,
+                    result: result,
+                    user: user_res,
+                    diff: diff,
+                    time: time
+                });
+            })();
+            break;
+        case 12:
+            (() => {
+                const values = e.data;
+                const n = values.number;
+                const vars = values.vars;
+                const functions = [];
+                const user_f = [];
+                const vals = values.vals;
+
+                for (let i = 0 ; i < n ; i++){
+                    let fun = [];
+                    for (let j = 0 ; j < n ; j++){
+                        fun.push(`${vals[i][j]}*${vars[j]}`)
+                    }
+                    user_f.push(values.user[i]);
+                    functions.push(fun.join(" + "))
+                }
+
+                const funcs = generate_func(vars.slice(0,n),"t",functions);
+                const user = generate_func([],"t",user_f);
+
+                const [result, user_res , diff, time] = runge_kutt({
+                    start_time: values.start,
+                    end_time: values.start + 1,
+                    steps: 100,
+                    funcs: funcs,
+                    user_func:user,
+                    n: n,
+                    initial: vals.start
+                });
+
+                postMessage({
+                    ok:true,
+                    cmd:command,
+                    data:e.data,
+                    result:result,
+                    user:user_res,
+                    diff:diff,
+                    time:time
+                });
+            })();
+            break;
+        case 13:
+            (() => {
+                const values = e.data;
+                const n = values.number;
+                const vars = values.vars;
+                const functions = [];
+                const user_f = [];
+                const vals = values.vals;
+                console.log(vals);
+                for (let i = 0; i < n; i++) {
+                    let fun = [];
+                    for (let j = 0; j < n; j++) {
+                        fun.push(`${vals[i][j]}*${vars[j]}`)
+                    }
+                    fun.push(vals[i][n]);
+                    user_f.push(values.user[i]);
+                    functions.push(fun.join(" + "))
+                }
+
+                console.log(functions);
+
+                const funcs = generate_func(vars.slice(0, n), "t", functions);
+                const user = generate_func([], "t", user_f);
+
+                const [result, user_res, diff, time] = runge_kutt({
+                    start_time: values.start,
+                    end_time: values.start + 1,
+                    steps: 100,
+                    funcs: funcs,
+                    user_func: user,
+                    n: n,
+                    initial: vals.start
+                });
+
+                postMessage({
+                    ok: true,
+                    cmd: command,
+                    data: e.data,
+                    result: result,
+                    user: user_res,
+                    diff: diff,
+                    time: time
+                });
+            })();
             break;
         default:
             postMessage({ok:false,msg:"unsupported command",cmd: command})
     }
-})
+});
