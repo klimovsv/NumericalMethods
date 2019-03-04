@@ -92,11 +92,22 @@ const runge_kutt = ({
 
     return [result , user_res ,  diff ,time]
 };
+
+const transform_to_system = (n, coefs , f_x) => {
+    let functions = [];
+    for (let i = 1 ; i < n ; i++){
+        functions.push("y" + (i + 1))
+    }
+    functions.push(`(${f_x} - () )/(${coefs[0]})`)
+
+};
 // комманды для систем
+// 1 - с разделяющимися переменными
 // 10 - пост одн
 // 11 - пост неодн
 // 12 - непост одн
 // 13 - непост неодн
+// 14 - уравнения n-го порядка
 
 // eslint-disable-next-line
 self.addEventListener('message',(e) => {

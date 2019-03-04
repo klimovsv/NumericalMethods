@@ -140,7 +140,6 @@ class App extends Component {
                 <div className="App">
                     <Formik initialValues={{number:3,vars:['x','y','z'],vals:{},start:0}}
                             onSubmit={(values)=>{
-                                // console.log(values);
                                 self.worker.postMessage({...values,cmd:10})
                             }}
                             render = {({values,errors,touched})=>{
