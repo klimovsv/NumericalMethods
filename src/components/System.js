@@ -2,13 +2,13 @@ import React, { Component } from 'react';
 import {Field, Form, Formik} from "formik";
 import {Button} from "semantic-ui-react";
 import {CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis} from "recharts";
+import Validator from '../Validator'
 
 export default class System extends Component{
     constructor(props){
         super(props);
         this.state = props.state;
     }
-
 
     zip = (time , values , names) => {
         return time.map((t,i) => {
@@ -42,6 +42,67 @@ export default class System extends Component{
                             console.log(values);
                             self.props.worker.postMessage({...values,cmd:this.props.cmd,homogeneous:this.props.homogeneous})
                         }}
+                        // validate={values=>{
+                        //     let errors = {};
+                        //     errors.vals = {};
+                        //     errors.start = {};
+                        //     errors.user = {};
+                        //     let added = false;
+                        //     for(let i = 0; i < values.number ; i++){
+                        //         for (let j = 0; j < values.number ; j++){
+                        //             if(!!values.vals[i] && values.vals[i][j]){
+                        //                 let validated = Validator.validate_vars('t')(values.vals[i][j]);
+                        //                 if (!!validated){
+                        //                     added = true
+                        //                     errors.vals[i*values.number + j] = validated
+                        //                 }
+                        //             }
+                        //         }
+                        //     }
+                        //     if (!this.props.homogeneous){
+                        //         for(let i = 0; i < values.number ; i++){
+                        //             if(!!values.vals[i] && values.vals[i][values.number]) {
+                        //                 let validated;
+                        //                 if (this.props.cmd === 10 || this.props.cmd === 11){
+                        //                     validated = Validator.validate_number(values.vals[i][values.number]);
+                        //                 }else{
+                        //                     validated = Validator.validate_vars('t')(values.vals[i][values.number]);
+                        //                 }
+                        //                 // validated = Validator.validate_vars('t')(values.vals[i][values.number]);
+                        //                 if (!!validated){
+                        //                     added = true;
+                        //                     errors.vals[i * values.number + values.number] = validated
+                        //                 }
+                        //             }
+                        //         }
+                        //     }
+                        //
+                        //     for(let i = 0; i < values.number ; i++){
+                        //         if(!!values.vals.start && !!values.vals.start[i]) {
+                        //             let validated = Validator.validate_number(values.vals.start[i]);
+                        //             if (!!validated){
+                        //                 added = true;
+                        //                 errors.start[i] = validated
+                        //             }
+                        //         }
+                        //     }
+                        //
+                        //     for(let i = 0; i < values.number ; i++){
+                        //         if(!!values.user && !!values.user[i]) {
+                        //             let validated = Validator.validate_vars(['t'])(values.user[i]);
+                        //             if (!!validated){
+                        //                 added = true;
+                        //                 errors.user[i] = validated
+                        //             }
+                        //         }
+                        //     }
+                        //
+                        //     if (!added){
+                        //         errors = undefined
+                        //     }
+                        //     console.log(errors);
+                        //     return errors
+                        // }}
                         render = {({values,errors,touched})=>{
                             return (
                                 <Form >
@@ -60,7 +121,11 @@ export default class System extends Component{
                                                             if (ind < values.number){
                                                                 return (
                                                                     <span key={index*values.number+ ind}>
-                                                                            <Field type="text" name={`vals.${index}.${ind}`} style={{width:'50px'}}/>
+                                                                            <Field type="text" name={`vals.${index}.${ind}`} style={{width:'50px'}}
+                                                                                   className={
+                                                                                       !!errors.vals &&
+                                                                                       !!errors.vals[index*values.number + ind]? 'input error' : 'text-input'
+                                                                                   }/>
                                                                         {`${values.vars[ind]} `}
                                                                         {ind !== values.number - 1 ? '+ ':''}
                                                                         </span>
@@ -72,17 +137,26 @@ export default class System extends Component{
                                                     {!this.props.homogeneous && (
                                                         <span key={index*values.number + values.number}>
                                                             {' + '}
+                                                            {/*{console.log(errors.vals)}*/}
                                                             <Field type="text"
                                                                    name={`vals.${index}.${values.number}`}
                                                                    style={{width:'50px'}}
                                                                    placeholder="f(t)"
+                                                                   className={
+                                                                       !!errors.vals &&
+                                                                       !!errors.vals[index*(values.number+1) + values.number]? 'input error' : 'text-input'
+                                                                   }
                                                             />
                                                         </span>
                                                     )}
                                                     {
                                                         <span>
                                                             {`${values.vars[index]}(${values.start}) = `}
-                                                            <Field type="text" name={`vals.start.${index}`}/>
+                                                            <Field type="text" name={`vals.start.${index}`}
+                                                                   className={
+                                                                       !!errors.start &&
+                                                                       !!errors.start[index]? 'input error' : 'text-input'
+                                                                   }/>
                                                             </span>
                                                     }
                                                 </div>
@@ -95,7 +169,11 @@ export default class System extends Component{
                                                 <div key={index}>
                                                     {`${values.vars[index]} = `}
                                                     {
-                                                        <Field type="text" name={`user.${index}`}/>
+                                                        <Field type="text" name={`user.${index}`}
+                                                               className={
+                                                                   !!errors.user &&
+                                                                   !!errors.user[index]? 'input error' : 'text-input'
+                                                               }/>
                                                     }
                                                 </div>
                                             )

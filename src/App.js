@@ -25,15 +25,17 @@ class App extends Component {
     this.state = {visible:false,active:0};
     this.testing()
   }
+    validateX = Validator.validate_vars(['x']);
+    validateY = Validator.validate_vars(['y']);
 
     handleHideClick = () => this.setState({ visible: false })
     handleShowClick = () => this.setState({ visible: true })
     handleSidebarHide = () => this.setState({ visible: false })
 
   testing(){
-      const node = math.parse(" ".trim());
+          const node = math.parse("e^t".trim());
       console.log(node);
-      console.log(Validator.vilidate_vars(" ",[]))
+      console.log(Validator.validate_vars(" ",[]))
   }
 
   componentDidMount() {
@@ -120,7 +122,7 @@ class App extends Component {
                                 <Field type="p" name="p" placeholder="P(x)"className={
                                     !!errors.p && touched.p? 'input error' : 'text-input'
                                 }/>
-                                <Field type="q" name="q" placeholder="Q(y)"className={
+                                <Field type="q" name="q" placeholder="Q(y)" className={
                                     !!errors.q && touched.q? 'input error' : 'text-input'
                                 }/>
                                 {" dy = 0 "}

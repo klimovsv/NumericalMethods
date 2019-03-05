@@ -63,18 +63,17 @@ const runge_kutt = ({
         time.push(t)
     }
 
+
     let result = [];
     for(let i = 0 ; i < n ; i ++) {
         result.push(Number(initial[i]))
     }
     result = [result];
-
     for (let i = 0 ; i < steps ; i++){
         let next = runge_step(time[i],result[result.length-1],funcs,step);
         result.push(next)
     }
 
-    // console.log(user);
     const user_res = [];
     for(let i = 0 ; i < steps; i++){
         let tmp = [];
@@ -125,9 +124,6 @@ const system_solver = (e) => {
         user_f.push(values.user[i]);
         functions.push(fun.join(" + "))
     }
-
-
-
     const funcs = generate_func(vars.slice(0, n), "t", functions);
     const user = generate_func([], "t", user_f);
 
@@ -137,7 +133,7 @@ const system_solver = (e) => {
         steps: 100,
         funcs: funcs,
         user_func: user,
-        deg: n,
+        n: n,
         initial: vals.start
     });
 
