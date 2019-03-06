@@ -10,8 +10,9 @@ const generate_func = (vars,xvar,funcs) => {
             const scope = {};
             scope[xvar] = t;
             for (let i = 0 ; i < vars.length ; i++){
-                scope[vars[i]] = args[i]
+                scope[vars[i]] = args[i];
             }
+            console.log(funcs[n],scope);
             return math.eval(funcs[n],scope)
         })
     }
@@ -97,10 +98,15 @@ const transform_to_system = (n, coefs , f_x) => {
         functions.push("y" + (i + 1))
     }
     functions.push(`(${f_x} - (${coefs.map((c,ind) => {
-        if (ind > 0){
-            
+        if (ind < n){
+            return `${coefs[ind]}y${ind+1}`
         }
-    })}) )/(${coefs[0]})`)
+    }).slice(0,n).reduce(
+        (a,b) => {
+            return a + '+' +b
+        }
+    )}) )/(${coefs[n]})`);
+    return functions
 };
 
 
@@ -125,7 +131,7 @@ const system_solver = (e) => {
         functions.push(fun.join(" + "))
     }
     const funcs = generate_func(vars.slice(0, n), "t", functions);
-    const user = generate_func([], "t", user_f);
+    const user = generate_func([], "t", [user_f]);
 
     const [result, user_res, diff, time] = runge_kutt({
         start_time: values.start,
@@ -189,6 +195,32 @@ self.addEventListener('message',(e) => {
             break;
         case 14:
             console.log(e.data);
+            let values = e.data;
+            const functions = transform_to_system(values.deg,values.coefs,values.f);
+            console.log(values.coefs.map((v,i)=> `y${i+1}`));
+            console.log(functions);
+            const funcs = generate_func(values.coefs.map((v,i)=> `y${i+1}`), "x", functions);
+            const user = generate_func([], "x", values.user);
+
+            const [result, user_res, diff, time] = runge_kutt({
+                start_time: values.start,
+                end_time: values.start + 1,
+                steps: 100,
+                funcs: funcs,
+                user_func: user,
+                n: values.deg,
+                initial: values.start_v
+            });
+
+            postMessage({
+                ok: true,
+                cmd: command,
+                data: e.data,
+                result: result,
+                user: user_res,
+                diff: diff,
+                time: time
+            });
             break;
         default:
             postMessage({ok:false,msg:"unsupported command",cmd: command})

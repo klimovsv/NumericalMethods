@@ -33,9 +33,9 @@ class App extends Component {
     handleSidebarHide = () => this.setState({ visible: false })
 
   testing(){
-          const node = math.parse("e^t".trim());
-      console.log(node);
-      console.log(Validator.validate_vars(" ",[]))
+          const node = math.parse("3+-2".trim());
+        console.log(node);
+        console.log(node.eval())
   }
 
   componentDidMount() {
@@ -216,6 +216,10 @@ class App extends Component {
                                             )
                                         })
                                     }
+                                    <div>
+                                        y(x)=
+                                        <Field type="text" name='user'/>
+                                    </div>
                                 </Form>
                             )
                         }}/>
