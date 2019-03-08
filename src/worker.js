@@ -1,8 +1,5 @@
 import * as math from 'mathjs'
 
-
-//функции вида f(t,[x,y,..]) -> int
-
 const generate_func = (vars,xvar,funcs) => {
     let functions = [];
     for ( let n = 0 ; n < funcs.length ; n++){
@@ -12,7 +9,6 @@ const generate_func = (vars,xvar,funcs) => {
             for (let i = 0 ; i < vars.length ; i++){
                 scope[vars[i]] = args[i];
             }
-            console.log(funcs[n],scope);
             return math.eval(funcs[n],scope)
         })
     }
@@ -78,7 +74,7 @@ const runge_kutt = ({
     const user_res = [];
     for(let i = 0 ; i < steps; i++){
         let tmp = [];
-        for(let j = 0 ; j < n; j++){
+        for(let j = 0 ; j < user_func.length; j++){
             tmp.push(user_func[j](time[i],[]))
         }
         user_res.push(tmp)
@@ -131,7 +127,7 @@ const system_solver = (e) => {
         functions.push(fun.join(" + "))
     }
     const funcs = generate_func(vars.slice(0, n), "t", functions);
-    const user = generate_func([], "t", [user_f]);
+    const user = generate_func([], "t", user_f);
 
     const [result, user_res, diff, time] = runge_kutt({
         start_time: values.start,
@@ -194,13 +190,11 @@ self.addEventListener('message',(e) => {
             system_solver(e);
             break;
         case 14:
-            console.log(e.data);
             let values = e.data;
             const functions = transform_to_system(values.deg,values.coefs,values.f);
-            console.log(values.coefs.map((v,i)=> `y${i+1}`));
-            console.log(functions);
-            const funcs = generate_func(values.coefs.map((v,i)=> `y${i+1}`), "x", functions);
-            const user = generate_func([], "x", values.user);
+            const funcs = generate_func(values.coefs.map((v,i)=> `y${i+1}`).slice(0,values.deg), "x", functions);
+            const user = generate_func([], "x", [values.user]);
+
 
             const [result, user_res, diff, time] = runge_kutt({
                 start_time: values.start,
@@ -211,14 +205,13 @@ self.addEventListener('message',(e) => {
                 n: values.deg,
                 initial: values.start_v
             });
-
             postMessage({
                 ok: true,
                 cmd: command,
                 data: e.data,
-                result: result,
-                user: user_res,
-                diff: diff,
+                result: result.map(v => v[0]),
+                user: user_res.map(v => v[0]),
+                diff: diff.map(v => v[0]),
                 time: time
             });
             break;

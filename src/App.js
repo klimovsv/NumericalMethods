@@ -7,6 +7,7 @@ import * as math from 'mathjs';
 import {CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis} from "recharts"
 import System from './components/System'
 import {  Header, Icon, Image, Menu, Segment, Sidebar } from 'semantic-ui-react'
+import LinearPlot from "./components/LinearPlot";
 
 // комманды для систем
 // 10 - пост одн
@@ -21,7 +22,7 @@ let MyWorker = require("worker-loader!./worker.js");
 class App extends Component {
   constructor(props){
     super(props);
-    this.commands = [10,11,12,13,1];
+    this.commands = [10,11,12,13,1,14];
     this.state = {visible:false,active:0};
     this.testing()
   }
@@ -43,6 +44,7 @@ class App extends Component {
       this.worker.onmessage = (e) => {
           if(e.data.ok){
               const command = e.data.cmd;
+              console.log(e.data.cmd);
               if (this.commands.includes(command)){
                   this.state[command] = e.data;
                   this.forceUpdate();
@@ -59,32 +61,12 @@ class App extends Component {
     this.worker.terminate();
   }
 
-  zip = (time , values , names) => {
-      return time.map((t,i) => {
-          const obj = {
-              time : t.toFixed(3)
-          };
-          names.forEach((name,ind) => {
-              obj[name] = values[i][ind]
-          });
-          return obj
-      })
-  };
-
   range = (n) => {
       let r = [];
       for (let i = 0 ; i <n ; i++){
           r.push(i+1)
       }
       return r
-  };
-
-  concat = (arrays) => {
-      let newArr = [];
-      arrays[0].forEach((cart , i) => {
-          newArr.push(arrays.map((arr) => arr[i]).reduce((a,b) => a.concat(b)))
-      });
-      return newArr
   };
 
   render() {
@@ -173,7 +155,7 @@ class App extends Component {
             )},
         {menuItem: "Уравнения n-го порядка с постоянными коэф", render: () => (
             <div className="App">
-                <Formik enableReinitialize initialValues={{deg:1,start:2}}
+                <Formik enableReinitialize initialValues={{deg:1,start:0}}
                         onSubmit={(values)=>{
                             console.log(values);
                             self.worker.postMessage({...values,cmd:14})
@@ -223,6 +205,7 @@ class App extends Component {
                                 </Form>
                             )
                         }}/>
+                <LinearPlot state={this.state} cmd={14}/>
             </div>
             )
         }
