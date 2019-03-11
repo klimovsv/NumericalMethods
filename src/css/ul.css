@@ -17,12 +17,6 @@ h3{
 }
 
 ul {
-    /*padding: 0;*/
-    /*list-style: none;*/
-    /*width: 80%;*/
-    /*margin-left: 10%;*/
-    /*position: absolute;*/
-    /*top: 10px;*/
     display: block;
     list-style-type: decimal;
     margin-top: 200px;
@@ -38,7 +32,7 @@ li a {
     border-radius: 6px;
     color: #000;
     display: inline;
-    font-size: 15px;
+    font-size: 18px;
     height: 40px;
     width: auto;
     line-height: 40px;
