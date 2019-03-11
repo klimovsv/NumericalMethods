@@ -1,13 +1,19 @@
 import React, { Component } from 'react';
-import './App.css';
-import './slider.css'
+import './css/App.css';
+import './css/slider.css'
+// import './css/navbar.css'
+import './css/hamburger.css'
+import './css/ul.css'
 import {Field, Form, Formik} from "formik";
 import {Button, Modal, Tab} from "semantic-ui-react"
 import Validator from "./Validator.js";
 import System from './components/System'
 import {  Header, Icon, Image, Menu, Segment, Sidebar , Input } from 'semantic-ui-react'
 import LinearPlot from "./components/LinearPlot";
+import $ from "jquery";
 
+import i21 from './images/2.1.png'
+import i22 from './images/2.2.png'
 // комманды для систем
 // 2 - однородные урванения
 // 1 - разделяющиеся
@@ -28,19 +34,101 @@ class App extends Component {
   constructor(props){
     super(props);
     this.commands = [10,11,12,13,1,14,2,3];
-    this.state = {visible:false,active:2,length:1,steps:100};
-    this.testing()
+    this.state = {visible:false,active:0,length:1,steps:100};
+    this.menu()
   }
-    validateX = Validator.validate_vars(['x']);
-    validateY = Validator.validate_vars(['y']);
 
-    handleHideClick = () => this.setState({ visible: false })
+
+  menu() {
+      $(window).on('load',function(){
+          var height = window.innerHeight,
+              x= 0, y= height/2,
+              curveX = 10,
+              curveY = 0,
+              targetX = 0,
+              xitteration = 0,
+              yitteration = 0,
+              menuExpanded = false;
+
+          var blob = $('#blob'),
+              blobPath = $('#blob-path'),
+
+              hamburger = $('.hamburger');
+
+          $(this).on('mousemove', function(e){
+              x = e.pageX;
+              y = e.pageY;
+          });
+
+          $('.hamburger, .menu-inner').on('mouseenter', function(){
+              $(this).parent().addClass('expanded');
+              menuExpanded = true;
+          });
+
+          // $(this).on('click',function(){
+          //     menuExpanded = false;
+          //     $(this).parent().removeClass('expanded');
+          // });
+          $('.menu-inner').on('mouseleave', function(){
+              menuExpanded = false;
+              $(this).parent().removeClass('expanded');
+          });
+
+          function easeOutExpo(currentIteration, startValue, changeInValue, totalIterations) {
+              return changeInValue * (-Math.pow(2, -10 * currentIteration / totalIterations) + 1) + startValue;
+          }
+
+          var hoverZone = 150;
+          var expandAmount = 20;
+
+          function svgCurve() {
+              if ((curveX > x-1) && (curveX < x+1)) {
+                  xitteration = 0;
+              } else {
+                  if (menuExpanded) {
+                      targetX = 0;
+                  } else {
+                      xitteration = 0;
+                      if (x > hoverZone) {
+                          targetX = 0;
+                      } else {
+                          targetX = -(((60+expandAmount)/100)*(x-hoverZone));
+                      }
+                  }
+                  xitteration++;
+              }
+
+              if ((curveY > y-1) && (curveY < y+1)) {
+                  yitteration = 0;
+              } else {
+                  yitteration = 0;
+                  yitteration++;
+              }
+
+              curveX = easeOutExpo(xitteration, curveX, targetX-curveX, 100);
+              curveY = easeOutExpo(yitteration, curveY, y-curveY, 100);
+
+              var anchorDistance = 200;
+              var curviness = anchorDistance - 40;
+
+              var newCurve2 = "M60,"+height+"H0V0h60v"+(curveY-anchorDistance)+"c0,"+curviness+","+curveX+","+curviness+","+curveX+","+anchorDistance+"S60,"+(curveY)+",60,"+(curveY+(anchorDistance*2))+"V"+height+"z";
+
+              blobPath.attr('d', newCurve2);
+
+              blob.width(curveX+60);
+
+              hamburger.css('transform', 'translate('+curveX+'px, '+curveY+'px)');
+              window.requestAnimationFrame(svgCurve);
+          }
+
+          window.requestAnimationFrame(svgCurve);
+
+      });
+  }
+
     handleShowClick = () => this.setState({ visible: true })
     handleSidebarHide = () => this.setState({ visible: false })
 
-  testing(){
-
-  }
 
 
   componentDidMount() {
@@ -75,12 +163,25 @@ class App extends Component {
 
   render() {
     const self = this;
-    const modals =[{
-        render : () => {
+    const modals =[
+        {
+            render : () => {
             return (
-                <div>
-                    <Modal trigger={<Button>Scrolling Content Modal</Button>}>
-                        <Modal.Header>Profile Picture</Modal.Header>
+                <Modal trigger={<div><Icon name='book' size='small'/>Approach</div>}>
+                    <Modal.Header align="center">Уравнения с разделяющимися переменными</Modal.Header>
+                    <Modal.Content scrolling>
+                        <div align="center"><Image wrapped src={i21}/></div>
+                        <div align="center"><Image wrapped src={i22}/></div>
+                    </Modal.Content>
+                </Modal>
+            )
+        }
+        },
+        {
+            render : () => {
+                return (
+                    <Modal trigger={<div><Icon name='book' size='small'/>Approach</div>}>
+                        <Modal.Header>Однородные уравнения</Modal.Header>
                         <Modal.Content image scrolling>
                             <Image size='medium' src='https://react.semantic-ui.com/images/wireframe/image.png' wrapped />
 
@@ -95,13 +196,189 @@ class App extends Component {
                             </Button>
                         </Modal.Actions>
                     </Modal>
-                </div>
-            )
-        }
-    }];
+                )
+            }
+        },
+        {
+            render : () => {
+                return (
+                    <Modal trigger={<div><Icon name='book' size='small'/>Approach</div>}>
+                        <Modal.Header>Линейные уравнения первого порядка</Modal.Header>
+                        <Modal.Content image scrolling>
+                            <Image size='medium' src='https://react.semantic-ui.com/images/wireframe/image.png' wrapped />
+
+                            <Modal.Description>
+                                <Header>Modal Header</Header>
+                                <p>This is an example of expanded content that will cause the modal's dimmer to scroll</p>
+                            </Modal.Description>
+                        </Modal.Content>
+                        <Modal.Actions>
+                            <Button primary>
+                                Proceed <Icon name='chevron right' />
+                            </Button>
+                        </Modal.Actions>
+                    </Modal>
+                )
+            }
+        },
+        {
+            render : () => {
+                return (
+                    <Modal trigger={<div><Icon name='book' size='small'/>Approach</div>}>
+                        <Modal.Header>Системы с постоянными коэф одн</Modal.Header>
+                        <Modal.Content image scrolling>
+                            <Image size='medium' src='https://react.semantic-ui.com/images/wireframe/image.png' wrapped />
+
+                            <Modal.Description>
+                                <Header>Modal Header</Header>
+                                <p>This is an example of expanded content that will cause the modal's dimmer to scroll</p>
+                            </Modal.Description>
+                        </Modal.Content>
+                        <Modal.Actions>
+                            <Button primary>
+                                Proceed <Icon name='chevron right' />
+                            </Button>
+                        </Modal.Actions>
+                    </Modal>
+                )
+            }
+        },
+        {
+            render : () => {
+                return (
+                    <Modal trigger={<div><Icon name='book' size='small'/>Approach</div>}>
+                        <Modal.Header>Системы с постоянными коэф неодн</Modal.Header>
+                        <Modal.Content image scrolling>
+                            <Image size='medium' src='https://react.semantic-ui.com/images/wireframe/image.png' wrapped />
+
+                            <Modal.Description>
+                                <Header>Modal Header</Header>
+                                <p>This is an example of expanded content that will cause the modal's dimmer to scroll</p>
+                            </Modal.Description>
+                        </Modal.Content>
+                        <Modal.Actions>
+                            <Button primary>
+                                Proceed <Icon name='chevron right' />
+                            </Button>
+                        </Modal.Actions>
+                    </Modal>
+                )
+            }
+        },
+        {
+            render : () => {
+                return (
+                    <Modal trigger={<div><Icon name='book' size='small'/>Approach</div>}>
+                        <Modal.Header>Системы с постоянными коэф неодн</Modal.Header>
+                        <Modal.Content image scrolling>
+                            <Image size='medium' src='https://react.semantic-ui.com/images/wireframe/image.png' wrapped />
+
+                            <Modal.Description>
+                                <Header>Modal Header</Header>
+                                <p>This is an example of expanded content that will cause the modal's dimmer to scroll</p>
+                            </Modal.Description>
+                        </Modal.Content>
+                        <Modal.Actions>
+                            <Button primary>
+                                Proceed <Icon name='chevron right' />
+                            </Button>
+                        </Modal.Actions>
+                    </Modal>
+                )
+            }
+        },
+        {
+            render : () => {
+                return (
+                    <Modal trigger={<div><Icon name='book' size='small'/>Approach</div>}>
+                        <Modal.Header>Системы с переменными коэф одн</Modal.Header>
+                        <Modal.Content image scrolling>
+                            <Image size='medium' src='https://react.semantic-ui.com/images/wireframe/image.png' wrapped />
+
+                            <Modal.Description>
+                                <Header>Modal Header</Header>
+                                <p>This is an example of expanded content that will cause the modal's dimmer to scroll</p>
+                            </Modal.Description>
+                        </Modal.Content>
+                        <Modal.Actions>
+                            <Button primary>
+                                Proceed <Icon name='chevron right' />
+                            </Button>
+                        </Modal.Actions>
+                    </Modal>
+                )
+            }
+        },
+        {
+            render : () => {
+                return (
+                    <Modal trigger={<div><Icon name='book' size='small'/>Approach</div>}>
+                        <Modal.Header>Системы с переменными коэф неодн</Modal.Header>
+                        <Modal.Content image scrolling>
+                            <Image size='medium' src='https://react.semantic-ui.com/images/wireframe/image.png' wrapped />
+
+                            <Modal.Description>
+                                <Header>Modal Header</Header>
+                                <p>This is an example of expanded content that will cause the modal's dimmer to scroll</p>
+                            </Modal.Description>
+                        </Modal.Content>
+                        <Modal.Actions>
+                            <Button primary>
+                                Proceed <Icon name='chevron right' />
+                            </Button>
+                        </Modal.Actions>
+                    </Modal>
+                )
+            }
+        },
+        {
+            render : () => {
+                return (
+                    <Modal trigger={<div><Icon name='book' size='small'/>Approach</div>}>
+                        <Modal.Header>Уравнения n-го порядка с постоянными коэф</Modal.Header>
+                        <Modal.Content image scrolling>
+                            <Image size='medium' src='https://react.semantic-ui.com/images/wireframe/image.png' wrapped />
+
+                            <Modal.Description>
+                                <Header>Modal Header</Header>
+                                <p>This is an example of expanded content that will cause the modal's dimmer to scroll</p>
+                            </Modal.Description>
+                        </Modal.Content>
+                        <Modal.Actions>
+                            <Button primary>
+                                Proceed <Icon name='chevron right' />
+                            </Button>
+                        </Modal.Actions>
+                    </Modal>
+                )
+            }
+        },
+        {
+            render : () => {
+                return (
+                    <Modal trigger={<div><Icon name='book' size='small'/>Approach</div>}>
+                        <Modal.Header>Уравнения n-го порядка с переменными коэф</Modal.Header>
+                        <Modal.Content image scrolling>
+                            <Image size='medium' src='https://react.semantic-ui.com/images/wireframe/image.png' wrapped />
+
+                            <Modal.Description>
+                                <Header>Modal Header</Header>
+                                <p>This is an example of expanded content that will cause the modal's dimmer to scroll</p>
+                            </Modal.Description>
+                        </Modal.Content>
+                        <Modal.Actions>
+                            <Button primary>
+                                Proceed <Icon name='chevron right' />
+                            </Button>
+                        </Modal.Actions>
+                    </Modal>
+                )
+            }
+        },
+        ];
     const panes = [
         {menuItem : "Уравнения с разделяющимися переменными",render : () => (
-                <span className="App">
+                <div className="App">
                     <Formik enableReinitialize initialValues={{start:0,m:"",n:"",p:"",q:""}} key={1}
                             onSubmit={(values)=>{
                                 const exist = (arr) => {
@@ -158,7 +435,7 @@ class App extends Component {
                         )}
                     </Formik>
                     <LinearPlot state={this.state} cmd={1}/>
-                </span>
+                </div>
             )
         },
         {menuItem : "Однородные уравнения",render : () => (
@@ -454,61 +731,69 @@ class App extends Component {
     ];
     const { visible } = this.state;
     return (
-      <div>
-          <Sidebar.Pushable as={Segment}>
-              <Sidebar
-                  as={Menu}
-                  animation='overlay'
-                  icon='labeled'
-                  inverted
-                  onHide={this.handleSidebarHide}
-                  vertical
-                  visible={visible}
-                  width='wide'
-              >
-                  {panes.map((pane, i) => {
-                      return (
-                          <Menu.Item as='a'
-                            onClick={()=>{
-                                this.setState({active:i})
-                            }}>
-                              {pane.menuItem}
-                          </Menu.Item>
-                      )
-                  })}
-              </Sidebar>
+        <div>
+            <span>
+                <span id="menu">
+                <div className="hamburger">
+                    <div className="line"></div>
+                    <div className="line"></div>
+                    <div className="line"></div>
+                </div>
+                <div className="menu-inner">
+                    <ul>
+                        {
+                            panes.map((pane,i)=>{
+                                if (i === this.state.active) {
+                                    return( <li onClick={()=>{this.setState({active:i})}}><a className="active">{pane.menuItem}</a></li>)
+                                }else{
+                                    return( <li onClick={()=>{this.setState({active:i})}}><a>{pane.menuItem}</a></li>)
+                                }
+                            })
+                        }
+                    </ul>
+                </div>
 
-              <Sidebar.Pusher>
-                  <Menu attached='top'>
-                      <Menu.Item name='gamepad' active={visible} onClick={this.handleShowClick}>
-                          <Icon name='bars' size='small'/>
-                          Menu
-                      </Menu.Item>
-                      <Menu.Item name='settings' active={visible}>
-                          <Modal trigger={<div><Icon name='settings' size='small'/>Settings</div>}>
-                              <h3>Длина отрезка - {this.state.length}</h3>
-                              <input type="range" name="len" min="1" max="10" value={this.state.length} step="0.1" className="slider" onChange={(e)=>{
-                                  this.setState({length:e.target.value});
-                                  this.worker.postMessage({cmd:0,length:e.target.value})
-                              }}/>
-                              <h3>Количество шагов - {this.state.steps}</h3>
-                              <input type="range" name="steps" min="10" max="200" value={this.state.steps} step="1" className="slider" onChange={(e)=>{
-                                  this.setState({steps:e.target.value});
-                                  this.worker.postMessage({cmd:-1,steps:e.target.value})
-                              }}/>
-                          </Modal>
-                      </Menu.Item>
-                  </Menu>
 
-                  <Segment basic style={{height:"900px"}}>
-                      <div>
-                          {panes[this.state.active].render()}
-                      </div>
-                  </Segment>
-              </Sidebar.Pusher>
-          </Sidebar.Pushable>
-      </div>
-    );
+                <svg version="1.1" id="blob" xmlns="http://www.w3.org/2000/svg"
+                     xlink="http://www.w3.org/1999/xlink">
+                    <path id="blob-path" d="M60,500H0V0h60c0,0,20,172,20,250S60,900,60,500z"/>
+                </svg>
+                </span>
+                <div align="center" style={{margin: "auto", width: "50%"}}>
+                    <h3>
+                        Методические указания к решению обыкновенных дифференциальных уравнений
+                    </h3>
+                </div>
+                <div className="marg">
+                    <Menu attached='top' position='right'>
+                    <Menu.Menu position='right'>
+                        <Menu.Item name='settings' active={visible}>
+                        <Modal trigger={<div><Icon name='settings' size='small'/>Settings</div>}>
+                            <h2>Длина отрезка - {this.state.length}</h2>
+                            <input type="range" name="len" min="1" max="10" value={this.state.length} step="0.1" className="slider" onChange={(e)=>{
+                                this.setState({length:e.target.value});
+                                this.worker.postMessage({cmd:0,length:e.target.value})
+                            }}/>
+                            <h2>Количество шагов - {this.state.steps}</h2>
+                            <input type="range" name="steps" min="10" max="200" value={this.state.steps} step="1" className="slider" onChange={(e)=>{
+                                this.setState({steps:e.target.value});
+                                this.worker.postMessage({cmd:-1,steps:e.target.value})
+                            }}/>
+                        </Modal>
+                    </Menu.Item>
+                        <Menu.Item >
+                        {modals[this.state.active].render()}
+                    </Menu.Item>
+                    </Menu.Menu>
+                </Menu>
+                <div style={{height:"850px"}}>
+                    {panes[this.state.active].render()}
+                    </div>
+                </div>
+
+            </span>
+        </div>
+    )
   }
 }
 
