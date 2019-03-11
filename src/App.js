@@ -1,29 +1,34 @@
 import React, { Component } from 'react';
 import './App.css';
+import './slider.css'
 import {Field, Form, Formik} from "formik";
-import {Button, Tab} from "semantic-ui-react"
+import {Button, Modal, Tab} from "semantic-ui-react"
 import Validator from "./Validator.js";
-import * as math from 'mathjs';
-import {CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis} from "recharts"
 import System from './components/System'
-import {  Header, Icon, Image, Menu, Segment, Sidebar } from 'semantic-ui-react'
+import {  Header, Icon, Image, Menu, Segment, Sidebar , Input } from 'semantic-ui-react'
 import LinearPlot from "./components/LinearPlot";
 
 // комманды для систем
+// 2 - однородные урванения
+// 1 - разделяющиеся
+// 3 - линейные уравнения первого порядка (+ бернулли и рикатти)
+// 4 -
 // 10 - пост одн
 // 11 - пост неодн
 // 12 - непост одн
 // 13 - непост неодн
-// 14 - уравнения deg-го порядка
+// 14 - уравнения n-го порядка
+// 14 - уравнения n-го порядка с перемнными коэф
 
 // eslint-disable-next-line
 let MyWorker = require("worker-loader!./worker.js");
-//
+
+
 class App extends Component {
   constructor(props){
     super(props);
-    this.commands = [10,11,12,13,1,14];
-    this.state = {visible:false,active:0};
+    this.commands = [10,11,12,13,1,14,2,3];
+    this.state = {visible:false,active:2,length:1,steps:100};
     this.testing()
   }
     validateX = Validator.validate_vars(['x']);
@@ -34,10 +39,9 @@ class App extends Component {
     handleSidebarHide = () => this.setState({ visible: false })
 
   testing(){
-          const node = math.parse("3+-2".trim());
-        console.log(node);
-        console.log(node.eval())
+
   }
+
 
   componentDidMount() {
       this.worker = new MyWorker();
@@ -71,10 +75,34 @@ class App extends Component {
 
   render() {
     const self = this;
+    const modals =[{
+        render : () => {
+            return (
+                <div>
+                    <Modal trigger={<Button>Scrolling Content Modal</Button>}>
+                        <Modal.Header>Profile Picture</Modal.Header>
+                        <Modal.Content image scrolling>
+                            <Image size='medium' src='https://react.semantic-ui.com/images/wireframe/image.png' wrapped />
+
+                            <Modal.Description>
+                                <Header>Modal Header</Header>
+                                <p>This is an example of expanded content that will cause the modal's dimmer to scroll</p>
+                            </Modal.Description>
+                        </Modal.Content>
+                        <Modal.Actions>
+                            <Button primary>
+                                Proceed <Icon name='chevron right' />
+                            </Button>
+                        </Modal.Actions>
+                    </Modal>
+                </div>
+            )
+        }
+    }];
     const panes = [
         {menuItem : "Уравнения с разделяющимися переменными",render : () => (
-                <div className="App">
-                    <Formik enableReinitialize initialValues={{start:0,m:"",n:"",p:"",q:""}}
+                <span className="App">
+                    <Formik enableReinitialize initialValues={{start:0,m:"",n:"",p:"",q:""}} key={1}
                             onSubmit={(values)=>{
                                 const exist = (arr) => {
                                     for ( let field of arr){
@@ -82,7 +110,7 @@ class App extends Component {
                                     }
                                     return true
                                 };
-                                if(exist(['f','g'])){
+                                if(exist(['f'])){
                                     self.worker.postMessage({...values,cmd:1,mode:2})
                                 }else if(exist(['m','n','p','q'])){
                                     self.worker.postMessage({...values,cmd:1,mode:1})
@@ -112,8 +140,7 @@ class App extends Component {
                                     или
                                 </div>
                                 {"y' = "}
-                                <Field type="f" name="f" placeholder="f(x)"/>
-                                <Field type="g" name="g" placeholder="g(y)"/>
+                                <Field type="f" name="f" placeholder="f(x)*g(y)"/>
                                 <div>
                                     {`y(${values.start}) = `}
                                     <Field type="text" name={`start_value`}/>
@@ -130,6 +157,165 @@ class App extends Component {
                             </Form>
                         )}
                     </Formik>
+                    <LinearPlot state={this.state} cmd={1}/>
+                </span>
+            )
+        },
+        {menuItem : "Однородные уравнения",render : () => (
+                <div className="App">
+                    <Formik enableReinitialize initialValues={{start:0,m:"",n:""}} key={2}
+                            onSubmit={(values)=>{
+                                self.worker.postMessage({...values,cmd:2})
+                            }}
+                    >
+                        {({errors,touched,values})=>(
+                            <Form>
+                                <Field type="number" name="start"/>
+                                <Field type="m" name="m" placeholder="M(x,y)"/>
+                                {" dx + "}
+                                <Field type="n" name="n" placeholder="N(x,y)"/>
+                                {" dy = 0 "}
+                                <div>
+                                    {`y(${values.start}) = `}
+                                    <Field type="text" name={`start_value`}/>
+                                </div>
+                                <div>
+                                    {`y(x) = `}
+                                    <Field type="text" name={`user`}/>
+                                </div>
+                                <div>
+                                    <Button type="submit">
+                                        Submit
+                                    </Button>
+                                </div>
+                            </Form>
+                        )}
+                    </Formik>
+                    <LinearPlot state={this.state} cmd={2}/>
+                </div>
+            )
+        },
+        {menuItem : "Линейные уравнения первого порядка",render : () => (
+                <div className="App">
+                    <Tab menu={{pointing:true}} panes={[
+                        {menuItem : "Линейные уравнения первого порядка" , render : () => {
+                                return (
+                                    <div className="App">
+                                        <Formik enableReinitialize initialValues={{start:0,a:"",b:"",user:"",start_value:""}} key={3}
+                                                onSubmit={(values)=>{
+                                                    self.worker.postMessage({...values,cmd:3,mode:1})
+                                                }}
+                                        >
+                                            {({errors,touched,values})=>(
+                                                <Form>
+                                                    <div className="App">
+                                                        <Field type="number" name="start"/>
+                                                    </div>
+                                                    {" y' + "}
+                                                    <Field type="text" name="a" placeholder="a(x)"/>
+                                                    {" y =  "}
+                                                    <Field type="text" name="b" placeholder="b(x)"/>
+                                                    <div>
+                                                        {`y(${values.start}) = `}
+                                                        <Field type="text" name={`start_value`}/>
+                                                    </div>
+                                                    <div>
+                                                        {`y(x) = `}
+                                                        <Field type="text" name={`user`}/>
+                                                    </div>
+                                                    <div>
+                                                        <Button type="submit">
+                                                            Submit
+                                                        </Button>
+                                                    </div>
+                                                </Form>
+                                            )}
+                                        </Formik>
+                                        <LinearPlot state={this.state} cmd={3}/>
+                                    </div>
+                                )
+                            }},
+                        {menuItem : "Уравнение Бернулли" , render : () => {
+                                return (
+                                    <div className="App">
+                                        <Formik enableReinitialize initialValues={{start:0,a:"",b:"",user:"",start_value:"",n:0}} key={3}
+                                                onSubmit={(values)=>{
+                                                    self.worker.postMessage({...values,cmd:3,mode:2})
+                                                }}
+                                        >
+                                            {({errors,touched,values})=>(
+                                                <Form>
+                                                    <div className="App">
+                                                        <Field type="number" name="start"/>
+                                                    </div>
+                                                    {" y' + "}
+                                                    <Field type="text" name="a" placeholder="a(x)"/>
+                                                    {" y =  "}
+                                                    <Field type="text" name="b" placeholder="b(x)"/>
+                                                    y
+                                                    <sup>
+                                                        <Field type="number" name="n" style={{height:"15px",width:"35px"}}/>
+                                                    </sup>
+                                                    <div>
+                                                        {`y(${values.start}) = `}
+                                                        <Field type="text" name={`start_value`}/>
+                                                    </div>
+                                                    <div>
+                                                        {`y(x) = `}
+                                                        <Field type="text" name={`user`}/>
+                                                    </div>
+                                                    <div>
+                                                        <Button type="submit">
+                                                            Submit
+                                                        </Button>
+                                                    </div>
+                                                </Form>
+                                            )}
+                                        </Formik>
+                                        <LinearPlot state={this.state} cmd={3}/>
+                                    </div>
+                                )
+                            }},
+                        {menuItem : "Уравнение Рикатти" , render : () => {
+                                return (
+                                    <div className="App">
+                                        <Formik enableReinitialize initialValues={{start:0,a:"",b:"",c:"",user:"",start_value:""}} key={3}
+                                                onSubmit={(values)=>{
+                                                    self.worker.postMessage({...values,cmd:3,mode:3})
+                                                }}
+                                        >
+                                            {({errors,touched,values})=>(
+                                                <Form>
+                                                    <div className="App">
+                                                        <Field type="number" name="start"/>
+                                                    </div>
+                                                    {" y' + "}
+                                                    <Field type="text" name="a" placeholder="a(x)"/>
+                                                    {" y +  "}
+                                                    <Field type="text" name="b" placeholder="b(x)"/>
+                                                    y<sup>2</sup>=
+                                                    <Field type="text" name="c" placeholder="c(x)"/>
+                                                    <div>
+                                                        {`y(${values.start}) = `}
+                                                        <Field type="text" name={`start_value`}/>
+                                                    </div>
+                                                    <div>
+                                                        {`y(x) = `}
+                                                        <Field type="text" name={`user`}/>
+                                                    </div>
+                                                    <div>
+                                                        <Button type="submit">
+                                                            Submit
+                                                        </Button>
+                                                    </div>
+                                                </Form>
+                                            )}
+                                        </Formik>
+                                        <LinearPlot state={this.state} cmd={3}/>
+                                    </div>
+                                )
+                            }}
+                    ]}/>
                 </div>
             )
         },
@@ -154,26 +340,26 @@ class App extends Component {
                 </div>
             )},
         {menuItem: "Уравнения n-го порядка с постоянными коэф", render: () => (
-            <div className="App">
-                <Formik enableReinitialize initialValues={{deg:1,start:0}}
-                        onSubmit={(values)=>{
-                            console.log(values);
-                            self.worker.postMessage({...values,cmd:14})
-                        }}
-                        render = {({values})=>{
-                            return (
-                                <Form >
-                                    <Field type="number" name="deg" min="1" max="6"/>
-                                    <Field type="number" name="start"/>
-                                    <Button type="submit">
-                                        Submit
-                                    </Button>
+                <div className="App">
+                    <Formik enableReinitialize initialValues={{deg:1,start:0, coefs:"",f:"",start_v:{},user:""}} key={14}
+                            onSubmit={(values)=>{
+                                console.log(values);
+                                self.worker.postMessage({...values,cmd:14})
+                            }}
+                            render = {({values})=>{
+                                return (
+                                    <Form >
+                                        <Field type="number" name="deg" min="1" max="6"/>
+                                        <Field type="number" name="start"/>
+                                        <Button type="submit">
+                                            Submit
+                                        </Button>
                                         <div>
                                             {
                                                 this.range(values.deg + 1).map(v => {
                                                     return (
                                                         <span>
-                                                   <Field type="text" name={`coefs.${values.deg-v +1}`} placeholder={`f(x)`} style={{width:'50px'}}/>
+                                                   <Field type="text" name={`coefs.${values.deg-v +1}`} placeholder={`f(x)`} style={{width:'50px'}} key={values.deg-v +1}/>
                                                    y<sup>{`(${values.deg-v+1})`}</sup>
                                                             {(values.deg-v+1) === 0 ? "": "+"}
                                                </span>
@@ -187,26 +373,82 @@ class App extends Component {
                                         </span>
                                             }
                                         </div>
-                                    {
-                                        this.range(values.deg).map(v => {
-                                            return (
-                                                <div>
-                                                    {`y`}<sup>{`(${v - 1})`}</sup>
-                                                    {`(${values.start})=`}
-                                                    <Field type="text"   name={`start_v.${v - 1}`}/>
-                                                </div>
-                                            )
-                                        })
-                                    }
-                                    <div>
-                                        y(x)=
-                                        <Field type="text" name='user'/>
-                                    </div>
-                                </Form>
-                            )
-                        }}/>
-                <LinearPlot state={this.state} cmd={14}/>
-            </div>
+                                        {
+                                            this.range(values.deg).map(v => {
+                                                return (
+                                                    <div>
+                                                        {`y`}<sup>{`(${v - 1})`}</sup>
+                                                        {`(${values.start})=`}
+                                                        <Field type="text"   name={`start_v.${v - 1}`}/>
+                                                    </div>
+                                                )
+                                            })
+                                        }
+                                        <div>
+                                            y(x)=
+                                            <Field type="text" name='user'/>
+                                        </div>
+                                    </Form>
+                                )
+                            }}/>
+                    <LinearPlot state={this.state} cmd={14}/>
+                </div>
+            )
+        },
+        {menuItem: "Уравнения n-го порядка с переменными коэф", render: () => (
+                <div className="App">
+                    <Formik enableReinitialize initialValues={{deg:1,start:0,coefs:"",f:"",start_v:{},user:""}} key={15}
+                            onSubmit={(values)=>{
+                                console.log(values);
+                                self.worker.postMessage({...values,cmd:14})
+                            }}
+                            render = {({values})=>{
+                                return (
+                                    <Form >
+                                        <Field type="number" name="deg" min="1" max="6"/>
+                                        <Field type="number" name="start"/>
+                                        <Button type="submit">
+                                            Submit
+                                        </Button>
+                                        <div>
+                                            {
+                                                this.range(values.deg + 1).map(v => {
+                                                    return (
+                                                        <span>
+                                                   <Field type="text" name={`coefs.${values.deg-v +1}`} placeholder={`f(x)`} style={{width:'50px'}} key={values.deg-v +1}/>
+                                                   y<sup>{`(${values.deg-v+1})`}</sup>
+                                                            {(values.deg-v+1) === 0 ? "": "+"}
+                                               </span>
+                                                    )
+                                                })
+                                            }
+                                            {
+                                                <span>
+                                            =
+                                            <Field type="text" placeholder={"f(x)"} name="f"/>
+                                        </span>
+                                            }
+                                        </div>
+                                        {
+                                            this.range(values.deg).map(v => {
+                                                return (
+                                                    <div>
+                                                        {`y`}<sup>{`(${v - 1})`}</sup>
+                                                        {`(${values.start})=`}
+                                                        <Field type="text"   name={`start_v.${v - 1}`}/>
+                                                    </div>
+                                                )
+                                            })
+                                        }
+                                        <div>
+                                            y(x)=
+                                            <Field type="text" name='user'/>
+                                        </div>
+                                    </Form>
+                                )
+                            }}/>
+                    <LinearPlot state={this.state} cmd={14}/>
+                </div>
             )
         }
     ];
@@ -237,19 +479,34 @@ class App extends Component {
               </Sidebar>
 
               <Sidebar.Pusher>
-                  <Segment basic style={{height:"900px"}}>
+                  <Menu attached='top'>
+                      <Menu.Item name='gamepad' active={visible} onClick={this.handleShowClick}>
+                          <Icon name='bars' size='small'/>
+                          Menu
+                      </Menu.Item>
+                      <Menu.Item name='settings' active={visible}>
+                          <Modal trigger={<div><Icon name='settings' size='small'/>Settings</div>}>
+                              <h3>Длина отрезка - {this.state.length}</h3>
+                              <input type="range" name="len" min="1" max="10" value={this.state.length} step="0.1" className="slider" onChange={(e)=>{
+                                  this.setState({length:e.target.value});
+                                  this.worker.postMessage({cmd:0,length:e.target.value})
+                              }}/>
+                              <h3>Количество шагов - {this.state.steps}</h3>
+                              <input type="range" name="steps" min="10" max="200" value={this.state.steps} step="1" className="slider" onChange={(e)=>{
+                                  this.setState({steps:e.target.value});
+                                  this.worker.postMessage({cmd:-1,steps:e.target.value})
+                              }}/>
+                          </Modal>
+                      </Menu.Item>
+                  </Menu>
 
-                      <Button.Group>
-                          <Button icon disabled={visible} onClick={this.handleShowClick}>
-                              <Icon name='bars' size='huge'/>
-                          </Button>
-                      </Button.Group>
-                      {panes[this.state.active].render()}
+                  <Segment basic style={{height:"900px"}}>
+                      <div>
+                          {panes[this.state.active].render()}
+                      </div>
                   </Segment>
               </Sidebar.Pusher>
           </Sidebar.Pushable>
-
-
       </div>
     );
   }

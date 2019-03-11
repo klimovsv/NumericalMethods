@@ -1,5 +1,8 @@
 import * as math from 'mathjs'
 
+let length = 1;
+let n_steps = 100;
+
 const generate_func = (vars,xvar,funcs) => {
     let functions = [];
     for ( let n = 0 ; n < funcs.length ; n++){
@@ -56,14 +59,13 @@ const runge_kutt = ({
     const step = (end_time-start_time)/steps;
 
     let time = [];
-    for (let t = start_time ; t <= end_time; t+=step){
+    for (let t = start_time , i = 0; i <= steps; t+=step,i++){
         time.push(t)
     }
 
-
     let result = [];
     for(let i = 0 ; i < n ; i ++) {
-        result.push(Number(initial[i]))
+        result.push(Number(math.eval(initial[i])))
     }
     result = [result];
     for (let i = 0 ; i < steps ; i++){
@@ -71,8 +73,9 @@ const runge_kutt = ({
         result.push(next)
     }
 
+    console.log(result);
     const user_res = [];
-    for(let i = 0 ; i < steps; i++){
+    for(let i = 0 ; i <=steps; i++){
         let tmp = [];
         for(let j = 0 ; j < user_func.length; j++){
             tmp.push(user_func[j](time[i],[]))
@@ -131,8 +134,8 @@ const system_solver = (e) => {
 
     const [result, user_res, diff, time] = runge_kutt({
         start_time: values.start,
-        end_time: values.start + 1,
-        steps: 100,
+        end_time: values.start + length,
+        steps: n_steps,
         funcs: funcs,
         user_func: user,
         n: n,
@@ -153,6 +156,7 @@ const system_solver = (e) => {
 
 // комманды для систем
 // 1 - с разделяющимися переменными
+// 2 - однородные урванения
 // 10 - пост одн
 // 11 - пост неодн
 // 12 - непост одн
@@ -163,18 +167,110 @@ const system_solver = (e) => {
 self.addEventListener('message',(e) => {
     const command = e.data.cmd;
     switch (command) {
+        case -1:
+            n_steps = e.data.steps;
+            break;
+        case 0:
+            length = e.data.length;
+            break;
         case 1:
             (()=>{
                 const values = e.data;
-
                 const mode = e.data.mode;
+                const user_f = generate_func([], "x", [values.user]);
+                const initial = [values.start_value];
+                let funcs;
                 if (mode === 1){
-
+                    funcs = generate_func(['y'],"x",[`-(${values.m}*${values.n})/(${values.p}*${values.q})`])
                 }else{
-
+                    funcs = generate_func(['y'],"x",[`${values.f}`])
                 }
 
-                postMessage({ok:true,msg:"success",cmd : command});
+                const [result, user_res, diff, time] = runge_kutt({
+                    start_time: values.start,
+                    end_time: values.start + length,
+                    steps: n_steps,
+                    funcs: funcs,
+                    user_func: user_f,
+                    n: 1,
+                    initial: initial
+                });
+                postMessage({
+                    ok: true,
+                    cmd: command,
+                    data: e.data,
+                    result: result.map(v => v[0]),
+                    user: user_res.map(v => v[0]),
+                    diff: diff.map(v => v[0]),
+                    time: time
+                });
+            })();
+            break;
+        case 2:
+            (()=>{
+                const values = e.data;
+                const mode = e.data.mode;
+                const user_f = generate_func([], "x", [values.user]);
+                const initial = [values.start_value];
+                let funcs = generate_func(['y'],"x",[`-(${values.m})/(${values.n})`])
+
+                const [result, user_res, diff, time] = runge_kutt({
+                    start_time: values.start,
+                    end_time: values.start + length,
+                    steps: n_steps,
+                    funcs: funcs,
+                    user_func: user_f,
+                    n: 1,
+                    initial: initial
+                });
+                postMessage({
+                    ok: true,
+                    cmd: command,
+                    data: e.data,
+                    result: result.map(v => v[0]),
+                    user: user_res.map(v => v[0]),
+                    diff: diff.map(v => v[0]),
+                    time: time
+                });
+            })();
+            break;
+        case 3:
+            (()=>{
+                const v = e.data;
+                const mode = e.data.mode;
+                const user_f = generate_func([], "x", [v.user]);
+                const initial = [v.start_value];
+                let funcs;
+                switch (mode) {
+                    case 1:
+                        funcs = generate_func(['y'],"x",[`(${v.b})-(${v.a})*y`]);
+                        break;
+                    case 2:
+                        funcs = generate_func(['y'],"x",[`(${v.b})*y^(${v.n})-(${v.a})*y`]);
+                        break;
+                    case 3:
+                        console.log(`(${v.c})-(${v.a})*y - (${v.b})*y^2`);
+                        funcs = generate_func(['y'],"x",[`(${v.c})-(${v.a})*y - (${v.b})*y^2`]);
+                        break;
+                }
+                const [result, user_res, diff, time] = runge_kutt({
+                    start_time: v.start,
+                    end_time: v.start + length,
+                    steps: n_steps,
+                    funcs: funcs,
+                    user_func: user_f,
+                    n: 1,
+                    initial: initial
+                });
+                postMessage({
+                    ok: true,
+                    cmd: command,
+                    data: e.data,
+                    result: result.map(v => v[0]),
+                    user: user_res.map(v => v[0]),
+                    diff: diff.map(v => v[0]),
+                    time: time
+                });
             })();
             break;
         case 10:
@@ -198,8 +294,8 @@ self.addEventListener('message',(e) => {
 
             const [result, user_res, diff, time] = runge_kutt({
                 start_time: values.start,
-                end_time: values.start + 1,
-                steps: 100,
+                end_time: values.start + length,
+                steps: n_steps,
                 funcs: funcs,
                 user_func: user,
                 n: values.deg,

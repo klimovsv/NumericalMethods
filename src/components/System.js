@@ -37,7 +37,7 @@ export default class System extends Component{
             <div>
                 <Formik
                     enableReinitialize
-                    initialValues={{number:3,vars:['x','y','z'],vals:{},start:0}}
+                    initialValues={{number:3,vars:['x','y','z'],vals:{},start:0}} key={this.props.cmd}
                         onSubmit={(values)=>{
                             console.log(values);
                             self.props.worker.postMessage({...values,cmd:this.props.cmd,homogeneous:this.props.homogeneous})

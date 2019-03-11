@@ -9,7 +9,6 @@ export default class LinearPlot extends Component {
 
     linear_zip = (arrays,names,time) => {
         return time.map((t,i) => {
-            console.log(t);
             const obj = {
                 time : t.toFixed(3)
             };
