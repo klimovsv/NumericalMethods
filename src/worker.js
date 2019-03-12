@@ -98,7 +98,7 @@ const transform_to_system = (n, coefs , f_x) => {
     }
     functions.push(`(${f_x} - (${coefs.map((c,ind) => {
         if (ind < n){
-            return `${coefs[ind]}y${ind+1}`
+            return `(${coefs[ind]})*y${ind+1}`
         }
     }).slice(0,n).reduce(
         (a,b) => {
@@ -121,7 +121,7 @@ const system_solver = (e) => {
     for (let i = 0; i < n; i++) {
         let fun = [];
         for (let j = 0; j < n; j++) {
-            fun.push(`${vals[i][j]}*${vars[j]}`)
+            fun.push(`(${vals[i][j]})*(${vars[j]})`)
         }
         if (!e.data.homogeneous){
             fun.push(vals[i][n]);
@@ -168,10 +168,10 @@ self.addEventListener('message',(e) => {
     const command = e.data.cmd;
     switch (command) {
         case -1:
-            n_steps = e.data.steps;
+            n_steps = Number(e.data.steps);
             break;
         case 0:
-            length = e.data.length;
+            length = Number(e.data.length);
             break;
         case 1:
             (()=>{
@@ -181,11 +181,12 @@ self.addEventListener('message',(e) => {
                 const initial = [values.start_value];
                 let funcs;
                 if (mode === 1){
-                    funcs = generate_func(['y'],"x",[`-(${values.m}*${values.n})/(${values.p}*${values.q})`])
+                    funcs = generate_func(['y'],"x",[`-((${values.m})*(${values.n}))/((${values.p})*(${values.q}))`])
                 }else{
                     funcs = generate_func(['y'],"x",[`${values.f}`])
                 }
 
+                console.log(values.start,values.start + length,n_steps);
                 const [result, user_res, diff, time] = runge_kutt({
                     start_time: values.start,
                     end_time: values.start + length,
@@ -249,7 +250,6 @@ self.addEventListener('message',(e) => {
                         funcs = generate_func(['y'],"x",[`(${v.b})*y^(${v.n})-(${v.a})*y`]);
                         break;
                     case 3:
-                        console.log(`(${v.c})-(${v.a})*y - (${v.b})*y^2`);
                         funcs = generate_func(['y'],"x",[`(${v.c})-(${v.a})*y - (${v.b})*y^2`]);
                         break;
                 }

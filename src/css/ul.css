@@ -16,19 +16,19 @@ h3{
     font-size: 22px;
 }
 
-ul {
+.myul {
     display: block;
     list-style-type: decimal;
-    margin-top: 200px;
+    margin-top: 150px;
     padding: 50px;
     width: 90%;
-    background-color: #FED057;
+    background-color: #babab7;
     position: fixed;
     height: 100%;
     overflow: auto;
 }
 
-li a {
+.myli a {
     border-radius: 6px;
     color: #000;
     display: inline;
@@ -40,13 +40,13 @@ li a {
     text-decoration: none;
 }
 
-li a.active {
+.myli a.active {
     display: inline;
     background-color: #001c91;
     color: white;
 }
 
-li a:hover:not(.active) {
+.myli a:hover:not(.active) {
     height: auto;
     background-color: #555;
     color: white;

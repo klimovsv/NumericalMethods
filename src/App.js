@@ -740,13 +740,13 @@ class App extends Component {
                     <div className="line"></div>
                 </div>
                 <div className="menu-inner">
-                    <ul>
+                    <ul className="myul">
                         {
                             panes.map((pane,i)=>{
                                 if (i === this.state.active) {
-                                    return( <li onClick={()=>{this.setState({active:i})}}><a className="active">{pane.menuItem}</a></li>)
+                                    return( <li className="myli" onClick={()=>{this.setState({active:i})}}><a className="active">{pane.menuItem}</a></li>)
                                 }else{
-                                    return( <li onClick={()=>{this.setState({active:i})}}><a>{pane.menuItem}</a></li>)
+                                    return( <li className="myli" onClick={()=>{this.setState({active:i})}}><a>{pane.menuItem}</a></li>)
                                 }
                             })
                         }
