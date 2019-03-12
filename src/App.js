@@ -11,6 +11,12 @@ import System from './components/System'
 import {  Header, Icon, Image, Menu, Segment, Sidebar , Input } from 'semantic-ui-react'
 import LinearPlot from "./components/LinearPlot";
 import $ from "jquery";
+import * as math from 'mathjs'
+import nerdamer from 'nerdamer/nerdamer.core'
+import 'nerdamer/Algebra'
+import 'nerdamer/Calculus'
+import 'nerdamer/Solve'
+import 'nerdamer/Extra'
 
 import i21 from './images/2.1.png'
 import i22 from './images/2.2.png'
@@ -28,108 +34,16 @@ import i22 from './images/2.2.png'
 
 // eslint-disable-next-line
 let MyWorker = require("worker-loader!./worker.js");
-
+// eslint-disable-next-line
 
 class App extends Component {
   constructor(props){
     super(props);
     this.commands = [10,11,12,13,1,14,2,3];
     this.state = {visible:false,active:0,length:1,steps:100};
-    this.menu()
+    this.menu();
+      this.test();
   }
-
-
-  menu() {
-      $(window).on('load',function(){
-          var height = window.innerHeight,
-              x= 0, y= height/2,
-              curveX = 10,
-              curveY = 0,
-              targetX = 0,
-              xitteration = 0,
-              yitteration = 0,
-              menuExpanded = false;
-
-          var blob = $('#blob'),
-              blobPath = $('#blob-path'),
-
-              hamburger = $('.hamburger');
-
-          $(this).on('mousemove', function(e){
-              x = e.pageX;
-              y = e.pageY;
-          });
-
-          $('.hamburger, .menu-inner').on('mouseenter', function(){
-              $(this).parent().addClass('expanded');
-              menuExpanded = true;
-          });
-
-          // $(this).on('click',function(){
-          //     menuExpanded = false;
-          //     $(this).parent().removeClass('expanded');
-          // });
-          $('.menu-inner').on('mouseleave', function(){
-              menuExpanded = false;
-              $(this).parent().removeClass('expanded');
-          });
-
-          function easeOutExpo(currentIteration, startValue, changeInValue, totalIterations) {
-              return changeInValue * (-Math.pow(2, -10 * currentIteration / totalIterations) + 1) + startValue;
-          }
-
-          var hoverZone = 150;
-          var expandAmount = 20;
-
-          function svgCurve() {
-              if ((curveX > x-1) && (curveX < x+1)) {
-                  xitteration = 0;
-              } else {
-                  if (menuExpanded) {
-                      targetX = 0;
-                  } else {
-                      xitteration = 0;
-                      if (x > hoverZone) {
-                          targetX = 0;
-                      } else {
-                          targetX = -(((60+expandAmount)/100)*(x-hoverZone));
-                      }
-                  }
-                  xitteration++;
-              }
-
-              if ((curveY > y-1) && (curveY < y+1)) {
-                  yitteration = 0;
-              } else {
-                  yitteration = 0;
-                  yitteration++;
-              }
-
-              curveX = easeOutExpo(xitteration, curveX, targetX-curveX, 100);
-              curveY = easeOutExpo(yitteration, curveY, y-curveY, 100);
-
-              var anchorDistance = 200;
-              var curviness = anchorDistance - 40;
-
-              var newCurve2 = "M60,"+height+"H0V0h60v"+(curveY-anchorDistance)+"c0,"+curviness+","+curveX+","+curviness+","+curveX+","+anchorDistance+"S60,"+(curveY)+",60,"+(curveY+(anchorDistance*2))+"V"+height+"z";
-
-              blobPath.attr('d', newCurve2);
-
-              blob.width(curveX+60);
-
-              hamburger.css('transform', 'translate('+curveX+'px, '+curveY+'px)');
-              window.requestAnimationFrame(svgCurve);
-          }
-
-          window.requestAnimationFrame(svgCurve);
-
-      });
-  }
-
-    handleShowClick = () => this.setState({ visible: true })
-    handleSidebarHide = () => this.setState({ visible: false })
-
-
 
   componentDidMount() {
       this.worker = new MyWorker();
@@ -149,6 +63,33 @@ class App extends Component {
       }
   }
 
+  test = () => {
+      let node = math.parse('2*y*y2 - (y1)^2 - 1');
+      console.log(node.toString());
+      const transformed = node.transform(function (node, path, parent) {
+          if (node.isSymbolNode && node.name === 'y2') {
+              const node1 = new math.expression.node.SymbolNode('p');
+              const node2 = new math.expression.node.SymbolNode('p1');
+              return new math.expression.node.OperatorNode('*','mul',[node1,node2])
+          }
+          if (node.isSymbolNode && node.name === 'y1') {
+              return new math.expression.node.SymbolNode('p');
+          }
+          if (node.isSymbolNode && node.name === 'y3') {
+              const node1 = new math.expression.node.SymbolNode('p');
+              const node2 = new math.expression.node.SymbolNode('p1');
+              const node3 = new math.expression.node.SymbolNode('p2');
+          }
+          else {
+              return node
+          }
+      });
+      console.log(transformed.toString());
+      let eq = nerdamer(transformed.toString()+"=0");
+      console.log(eq.solveFor("p1").toString())
+      // console.log(eq.solveFor('p1').toString())
+  };
+
   componentWillUnmount() {
     this.worker.terminate();
   }
@@ -160,6 +101,93 @@ class App extends Component {
       }
       return r
   };
+
+    menu() {
+        $(window).on('load',function(){
+            var height = window.innerHeight,
+                x= 0, y= height/2,
+                curveX = 10,
+                curveY = 0,
+                targetX = 0,
+                xitteration = 0,
+                yitteration = 0,
+                menuExpanded = false;
+
+            var blob = $('#blob'),
+                blobPath = $('#blob-path'),
+
+                hamburger = $('.hamburger');
+
+            $(this).on('mousemove', function(e){
+                x = e.pageX;
+                y = e.pageY;
+            });
+
+            $('.hamburger, .menu-inner').on('mouseenter', function(){
+                $(this).parent().addClass('expanded');
+                menuExpanded = true;
+            });
+
+            // $(this).on('click',function(){
+            //     menuExpanded = false;
+            //     $(this).parent().removeClass('expanded');
+            // });
+            $('.menu-inner').on('mouseleave', function(){
+                menuExpanded = false;
+                $(this).parent().removeClass('expanded');
+            });
+
+            function easeOutExpo(currentIteration, startValue, changeInValue, totalIterations) {
+                return changeInValue * (-Math.pow(2, -10 * currentIteration / totalIterations) + 1) + startValue;
+            }
+
+            var hoverZone = 150;
+            var expandAmount = 20;
+
+            function svgCurve() {
+                if ((curveX > x-1) && (curveX < x+1)) {
+                    xitteration = 0;
+                } else {
+                    if (menuExpanded) {
+                        targetX = 0;
+                    } else {
+                        xitteration = 0;
+                        if (x > hoverZone) {
+                            targetX = 0;
+                        } else {
+                            targetX = -(((60+expandAmount)/100)*(x-hoverZone));
+                        }
+                    }
+                    xitteration++;
+                }
+
+                if ((curveY > y-1) && (curveY < y+1)) {
+                    yitteration = 0;
+                } else {
+                    yitteration = 0;
+                    yitteration++;
+                }
+
+                curveX = easeOutExpo(xitteration, curveX, targetX-curveX, 100);
+                curveY = easeOutExpo(yitteration, curveY, y-curveY, 100);
+
+                var anchorDistance = 200;
+                var curviness = anchorDistance - 40;
+
+                var newCurve2 = "M60,"+height+"H0V0h60v"+(curveY-anchorDistance)+"c0,"+curviness+","+curveX+","+curviness+","+curveX+","+anchorDistance+"S60,"+(curveY)+",60,"+(curveY+(anchorDistance*2))+"V"+height+"z";
+
+                blobPath.attr('d', newCurve2);
+
+                blob.width(curveX+60);
+
+                hamburger.css('transform', 'translate('+curveX+'px, '+curveY+'px)');
+                window.requestAnimationFrame(svgCurve);
+            }
+
+            window.requestAnimationFrame(svgCurve);
+
+        });
+    }
 
   render() {
     const self = this;
