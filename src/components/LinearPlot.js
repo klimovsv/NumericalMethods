@@ -33,8 +33,9 @@ export default class LinearPlot extends Component {
             const diff = data.diff;
             const user = data.user;
             const res = data.result;
+            console.log(Math.max.apply(null, diff));
             const conc = [diff,user,res];
-            let names = ["dx","x_user","x_computed"];
+            let names = ["dy","y_user","y_computed"];
             const zipped = this.linear_zip(conc,names,time);
             names = [names];
             console.log(zipped);

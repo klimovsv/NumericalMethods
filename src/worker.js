@@ -153,6 +153,66 @@ const system_solver = (e) => {
     });
 };
 
+const bash_moul = (result,steps,step,f,time) => {
+    let y_r = result.map(v=>v[0]).slice(0,4);
+    for (let i = 3; i < steps; i++) {
+        let y_pred = y_r[i] +(step/24)*(55*f(time[i],y_r[i])-59*f(time[i-1],y_r[i-1]) + 37 * f(time[i-2],y_r[i-2]) -9 * f(time[i-3],y_r[i-3]));
+        let f_pred = f(time[i+1],y_pred);
+        y_r.push(y_r[i] + step*(9*f_pred + 19 *f(time[i],y_r[i]) - 5 * f(time[i-1],y_r[i-1]) + f(time[i-2],y_r[i-2]) )/24)
+    }
+    return y_r
+};
+
+const admas_bash = (y0,steps,step,f,time) => {
+    let y_r = [Number(y0)];
+    for(let i = 0 ; i < steps ; i++){
+        y_r.push(y_r[i] + step * f(time[i],y_r[i]))
+    }
+    return y_r
+};
+
+const admas = ({
+    start,end,steps,f,user,y0,e
+                         }) => {
+    const funcs = generate_func(['y'], "x", [f]);
+    user = generate_func([], "x", [user]);
+    const [result, user_res, diff, time] = runge_kutt({
+        start_time: start,
+        end_time: end,
+        steps: steps,
+        funcs:funcs,
+        user_func: user,
+        n: 1,
+        initial: [y0]
+    });
+    console.log(time);
+    const step = (end - start)/steps;
+    f = (x,y) => funcs[0](x,[y]);
+    user  = (x) => user[0](x,[]);
+
+
+
+
+    let y_r = bash_moul(result,steps,step,f,time);
+    // let y_r = admas_bash(y0,steps,step,f,time);
+
+
+
+    user_res.map(v=>v[0]).forEach((v,i) => {
+        diff[i] = Math.abs(v - y_r[i])
+    });
+
+    postMessage({
+        ok: true,
+        cmd: e.data.cmd,
+        data: e.data,
+        result: y_r,
+        user: user_res.map(v=>v[0]),
+        diff: diff,
+        time: time
+    });
+
+};
 
 // комманды для систем
 // 1 - с разделяющимися переменными
@@ -183,7 +243,17 @@ self.addEventListener('message',(e) => {
                 if (mode === 1){
                     funcs = generate_func(['y'],"x",[`-((${values.m})*(${values.n}))/((${values.p})*(${values.q}))`])
                 }else{
-                    funcs = generate_func(['y'],"x",[`${values.f}`])
+                    admas({
+                        start: values.start,
+                        end: values.start + length,
+                        steps: n_steps,
+                        f: values.f,
+                        user: values.user,
+                        y0:initial[0],
+                        e:e
+                    });
+                    return
+                    // funcs = generate_func(['y'],"x",[`${values.f}`])
                 }
 
                 console.log(values.start,values.start + length,n_steps);
@@ -287,7 +357,16 @@ self.addEventListener('message',(e) => {
             break;
         case 14:
             let values = e.data;
-            const functions = transform_to_system(values.deg,values.coefs,values.f);
+            let mode = e.data.mode;
+            let functions;
+            if (mode === 1){
+                functions = transform_to_system(values.deg,values.coefs,values.f);
+            }else if(mode === 2){
+                functions = transform_to_system(values.deg,values.coefs,"0");
+            }else if (mode === 3){
+                functions = transform_to_system(values.deg,values.coefs.map((c,i) => `x^${i} *(${c})`),values.f);
+            }
+            console.log(functions);
             const funcs = generate_func(values.coefs.map((v,i)=> `y${i+1}`).slice(0,values.deg), "x", functions);
             const user = generate_func([], "x", [values.user]);
 

@@ -426,7 +426,10 @@ class App extends Component {
                     >
                         {({errors,touched,values})=>(
                             <Form>
-                                <Field type="number" name="start"/>
+                                <div className="App" style={{margin:"20px"}}>
+                                    Стартовая точка : {' '} <Field type="number" name="start" style={{width:"50px"}}/>
+                                </div>
+
                                 <Field type="m" name="m" placeholder="M(x)" className={
                                     !!errors.m && touched.m? 'input error' : 'text-input'
                                 }/>
@@ -475,7 +478,9 @@ class App extends Component {
                     >
                         {({errors,touched,values})=>(
                             <Form>
-                                <Field type="number" name="start"/>
+                                <div className="App" style={{margin:"20px"}}>
+                                    Стартовая точка : {' '} <Field type="number" name="start" style={{width:"50px"}}/>
+                                </div>
                                 <Field type="m" name="m" placeholder="M(x,y)"/>
                                 {" dx + "}
                                 <Field type="n" name="n" placeholder="N(x,y)"/>
@@ -513,8 +518,8 @@ class App extends Component {
                                         >
                                             {({errors,touched,values})=>(
                                                 <Form>
-                                                    <div className="App">
-                                                        <Field type="number" name="start"/>
+                                                    <div className="App" style={{margin:"20px"}}>
+                                                        Стартовая точка : {' '} <Field type="number" name="start" style={{width:"50px"}}/>
                                                     </div>
                                                     {" y' + "}
                                                     <Field type="text" name="a" placeholder="a(x)"/>
@@ -550,8 +555,8 @@ class App extends Component {
                                         >
                                             {({errors,touched,values})=>(
                                                 <Form>
-                                                    <div className="App">
-                                                        <Field type="number" name="start"/>
+                                                    <div className="App" style={{margin:"15px"}}>
+                                                        Стартовая точка : {' '} <Field type="number" name="start" style={{width:"50px"}}/>
                                                     </div>
                                                     {" y' + "}
                                                     <Field type="text" name="a" placeholder="a(x)"/>
@@ -591,8 +596,8 @@ class App extends Component {
                                         >
                                             {({errors,touched,values})=>(
                                                 <Form>
-                                                    <div className="App">
-                                                        <Field type="number" name="start"/>
+                                                    <div className="App" style={{margin:"15px"}}>
+                                                        Стартовая точка : {' '} <Field type="number" name="start" style={{width:"50px"}}/>
                                                     </div>
                                                     {" y' + "}
                                                     <Field type="text" name="a" placeholder="a(x)"/>
@@ -646,57 +651,194 @@ class App extends Component {
             )},
         {menuItem: "Уравнения n-го порядка с постоянными коэф", render: () => (
                 <div className="App">
-                    <Formik enableReinitialize initialValues={{deg:1,start:0, coefs:"",f:"",start_v:{},user:""}} key={14}
-                            onSubmit={(values)=>{
-                                console.log(values);
-                                self.worker.postMessage({...values,cmd:14})
-                            }}
-                            render = {({values})=>{
-                                return (
-                                    <Form >
-                                        <Field type="number" name="deg" min="1" max="6"/>
-                                        <Field type="number" name="start"/>
-                                        <Button type="submit">
-                                            Submit
-                                        </Button>
-                                        <div>
-                                            {
-                                                this.range(values.deg + 1).map(v => {
-                                                    return (
-                                                        <span>
-                                                   <Field type="text" name={`coefs.${values.deg-v +1}`} placeholder={`f(x)`} style={{width:'50px'}} key={values.deg-v +1}/>
+                    <Tab menu={{pointing:true}} panes={[
+                         {menuItem:"Однородные уравнения",render: ()=>{
+                             return (
+                                 <div>
+                                     <Formik enableReinitialize initialValues={{deg:1,start:0, coefs:"",f:"",start_v:{},user:""}} key={14}
+                                             onSubmit={(values)=>{
+                                                 console.log(values);
+                                                 self.worker.postMessage({...values,cmd:14,mode:2})
+                                             }}
+                                             render = {({values})=>{
+                                                 return (
+                                                     <Form >
+                                                         <div className="App" style={{margin:"20px"}}>
+                                                             Порядок уравнения : {' '}
+                                                             <Field type="number" name="deg" min="1" max="6"/>
+                                                         </div>
+                                                         <div className="App" style={{margin:"20px"}}>
+                                                             Стартовая точка : {' '} <Field type="number" name="start" style={{width:"50px"}}/>
+                                                         </div>
+                                                         <div>
+                                                             {
+                                                                 this.range(values.deg + 1).map(v => {
+                                                                     return (
+                                                                         <span>
+                                                   <Field type="text" name={`coefs.${values.deg-v +1}`} placeholder={`a${v-1}`} style={{width:'50px'}} key={values.deg-v +1}/>
                                                    y<sup>{`(${values.deg-v+1})`}</sup>
-                                                            {(values.deg-v+1) === 0 ? "": "+"}
+                                                                             {(values.deg-v+1) === 0 ? "": "+"}
                                                </span>
-                                                    )
-                                                })
-                                            }
-                                            {
-                                                <span>
+                                                                     )
+                                                                 })
+                                                             }
+                                                             {
+                                                                 <span>
+                                            = 0
+                                        </span>
+                                                             }
+                                                         </div>
+                                                         {
+                                                             this.range(values.deg).map(v => {
+                                                                 return (
+                                                                     <div>
+                                                                         {`y`}<sup>{`(${v - 1})`}</sup>
+                                                                         {`(${values.start})=`}
+                                                                         <Field type="text"   name={`start_v.${v - 1}`}/>
+                                                                     </div>
+                                                                 )
+                                                             })
+                                                         }
+                                                         <div>
+                                                             y(x)=
+                                                             <Field type="text" name='user'/>
+                                                         </div>
+                                                         <Button type="submit">
+                                                             Submit
+                                                         </Button>
+                                                     </Form>
+                                                 )
+                                             }}/>
+                                     <LinearPlot state={this.state} cmd={14}/>
+                                 </div>
+                             )
+                         }},
+                         {menuItem:"Уравения Эйлера",render: ()=>{
+                                return (
+                                    <div>
+                                        <Formik enableReinitialize initialValues={{deg:1,start:0, coefs:"",f:"",start_v:{},user:""}} key={14}
+                                                onSubmit={(values)=>{
+                                                    console.log(values);
+                                                    self.worker.postMessage({...values,cmd:14,mode:3})
+                                                }}
+                                                render = {({values})=>{
+                                                    return (
+                                                        <Form >
+                                                            <div className="App" style={{margin:"20px"}}>
+                                                                Порядок уравнения : {' '}
+                                                                <Field type="number" name="deg" min="1" max="6"/>
+                                                            </div>
+                                                            <div className="App" style={{margin:"20px"}}>
+                                                                Стартовая точка : {' '} <Field type="number" name="start" style={{width:"50px"}}/>
+                                                            </div>
+                                                            <div>
+                                                                {
+                                                                    this.range(values.deg + 1).map(v => {
+                                                                        return (
+                                                                            <span>
+                                                   <Field type="text" name={`coefs.${values.deg-v +1}`} placeholder={`a${v-1}`} style={{width:'50px'}} key={values.deg-v +1}/>
+                                                                                x<sup>{`${values.deg-v+1}`}</sup>
+                                                                                y<sup>{`(${values.deg-v+1})`}</sup>
+                                                                                {(values.deg-v+1) === 0 ? "": "+"}
+                                               </span>
+                                                                        )
+                                                                    })
+                                                                }
+                                                                {
+                                                                    <span>
                                             =
                                             <Field type="text" placeholder={"f(x)"} name="f"/>
                                         </span>
-                                            }
-                                        </div>
-                                        {
-                                            this.range(values.deg).map(v => {
-                                                return (
-                                                    <div>
-                                                        {`y`}<sup>{`(${v - 1})`}</sup>
-                                                        {`(${values.start})=`}
-                                                        <Field type="text"   name={`start_v.${v - 1}`}/>
-                                                    </div>
-                                                )
-                                            })
-                                        }
-                                        <div>
-                                            y(x)=
-                                            <Field type="text" name='user'/>
-                                        </div>
-                                    </Form>
+                                                                }
+                                                            </div>
+                                                            {
+                                                                this.range(values.deg).map(v => {
+                                                                    return (
+                                                                        <div>
+                                                                            {`y`}<sup>{`(${v - 1})`}</sup>
+                                                                            {`(${values.start})=`}
+                                                                            <Field type="text"   name={`start_v.${v - 1}`}/>
+                                                                        </div>
+                                                                    )
+                                                                })
+                                                            }
+                                                            <div>
+                                                                y(x)=
+                                                                <Field type="text" name='user'/>
+                                                            </div>
+                                                            <Button type="submit">
+                                                                Submit
+                                                            </Button>
+                                                        </Form>
+                                                    )
+                                                }}/>
+                                        <LinearPlot state={this.state} cmd={14}/>
+                                    </div>
                                 )
-                            }}/>
-                    <LinearPlot state={this.state} cmd={14}/>
+                            }},
+                         {menuItem:"Неоднородные уравнения",render: ()=>{
+                                return (
+                                    <div>
+                                        <Formik enableReinitialize initialValues={{deg:1,start:0, coefs:"",f:"",start_v:{},user:""}} key={14}
+                                                onSubmit={(values)=>{
+                                                    console.log(values);
+                                                    self.worker.postMessage({...values,cmd:14,mode:1})
+                                                }}
+                                                render = {({values})=>{
+                                                    return (
+                                                        <Form >
+                                                            <div className="App" style={{margin:"20px"}}>
+                                                                Порядок уравнения : {' '}
+                                                                <Field type="number" name="deg" min="1" max="6"/>
+                                                            </div>
+                                                            <div className="App" style={{margin:"20px"}}>
+                                                                Стартовая точка : {' '} <Field type="number" name="start" style={{width:"50px"}}/>
+                                                            </div>
+                                                            <div>
+                                                                {
+                                                                    this.range(values.deg + 1).map(v => {
+                                                                        return (
+                                                                            <span>
+                                                   <Field type="text" name={`coefs.${values.deg-v +1}`} placeholder={`a${v-1}`} style={{width:'50px'}} key={values.deg-v +1}/>
+                                                   y<sup>{`(${values.deg-v+1})`}</sup>
+                                                                                {(values.deg-v+1) === 0 ? "": "+"}
+                                               </span>
+                                                                        )
+                                                                    })
+                                                                }
+                                                                {
+                                                                    <span>
+                                            =
+                                            <Field type="text" placeholder={"f(x)"} name="f"/>
+                                        </span>
+                                                                }
+                                                            </div>
+                                                            {
+                                                                this.range(values.deg).map(v => {
+                                                                    return (
+                                                                        <div>
+                                                                            {`y`}<sup>{`(${v - 1})`}</sup>
+                                                                            {`(${values.start})=`}
+                                                                            <Field type="text"   name={`start_v.${v - 1}`}/>
+                                                                        </div>
+                                                                    )
+                                                                })
+                                                            }
+                                                            <div>
+                                                                y(x)=
+                                                                <Field type="text" name='user'/>
+                                                            </div>
+                                                            <Button type="submit">
+                                                                Submit
+                                                            </Button>
+                                                        </Form>
+                                                    )
+                                                }}/>
+                                        <LinearPlot state={this.state} cmd={14}/>
+                                    </div>
+                                )
+                            }}
+                    ]}/>
                 </div>
             )
         },
@@ -705,16 +847,19 @@ class App extends Component {
                     <Formik enableReinitialize initialValues={{deg:1,start:0,coefs:"",f:"",start_v:{},user:""}} key={15}
                             onSubmit={(values)=>{
                                 console.log(values);
-                                self.worker.postMessage({...values,cmd:14})
+                                self.worker.postMessage({...values,cmd:14,mode:1})
                             }}
                             render = {({values})=>{
                                 return (
                                     <Form >
-                                        <Field type="number" name="deg" min="1" max="6"/>
-                                        <Field type="number" name="start"/>
-                                        <Button type="submit">
-                                            Submit
-                                        </Button>
+                                        <div className="App" style={{margin:"20px"}}>
+                                            Порядок уравнения : {' '}
+                                            <Field type="number" name="deg" min="1" max="6"/>
+                                        </div>
+                                        <div className="App" style={{margin:"20px"}}>
+                                            Стартовая точка : {' '} <Field type="number" name="start" style={{width:"50px"}}/>
+                                        </div>
+
                                         <div>
                                             {
                                                 this.range(values.deg + 1).map(v => {
@@ -749,6 +894,9 @@ class App extends Component {
                                             y(x)=
                                             <Field type="text" name='user'/>
                                         </div>
+                                        <Button type="submit">
+                                            Submit
+                                        </Button>
                                     </Form>
                                 )
                             }}/>

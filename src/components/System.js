@@ -106,11 +106,16 @@ export default class System extends Component{
                         render = {({values,errors,touched})=>{
                             return (
                                 <Form >
-                                    <Field component="select" name="number">
-                                        <option value="2">2</option>
-                                        <option value="3">3</option>
-                                    </Field>
-                                    <Field type="number" name="start"/>
+                                    <div className="App" style={{margin:"15px"}}>
+                                        {'Размерность системы : '}
+                                        <Field component="select" name="number">
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                        </Field>
+                                    </div>
+                                    <div className="App" style={{margin:"15px"}}>
+                                        Стартовая точка : {' '} <Field type="number" name="start" style={{width:"50px"}}/>
+                                    </div>
                                     {values.vars.map((variable,index) => {
                                         if (index < values.number){
                                             return (
