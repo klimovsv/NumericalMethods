@@ -20,6 +20,7 @@ import 'nerdamer/Extra'
 
 import i21 from './images/2.1.png'
 import i22 from './images/2.2.png'
+import {CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis} from "recharts";
 // комманды для систем
 // 2 - однородные урванения
 // 1 - разделяющиеся
@@ -31,6 +32,7 @@ import i22 from './images/2.2.png'
 // 13 - непост неодн
 // 14 - уравнения n-го порядка
 // 14 - уравнения n-го порядка с перемнными коэф
+// 15 - разрешенные отн y'
 
 // eslint-disable-next-line
 let MyWorker = require("worker-loader!./worker.js");
@@ -39,11 +41,13 @@ let MyWorker = require("worker-loader!./worker.js");
 class App extends Component {
   constructor(props){
     super(props);
-    this.commands = [10,11,12,13,1,14,2,3];
+    this.commands = [10,11,12,13,1,14,2,3,15,16,17];
     this.state = {visible:false,active:0,length:1,steps:100};
     this.menu();
       this.test();
   }
+
+  valaidate_x = Validator.validate_vars(['x']);
 
   componentDidMount() {
       this.worker = new MyWorker();
@@ -63,30 +67,52 @@ class App extends Component {
       }
   }
 
-  test = () => {
-      let node = math.parse('2*y*y2 - (y1)^2 - 1');
-      console.log(node.toString());
-      const transformed = node.transform(function (node, path, parent) {
-          if (node.isSymbolNode && node.name === 'y2') {
-              const node1 = new math.expression.node.SymbolNode('p');
-              const node2 = new math.expression.node.SymbolNode('p1');
-              return new math.expression.node.OperatorNode('*','mul',[node1,node2])
-          }
-          if (node.isSymbolNode && node.name === 'y1') {
-              return new math.expression.node.SymbolNode('p');
-          }
-          if (node.isSymbolNode && node.name === 'y3') {
-              const node1 = new math.expression.node.SymbolNode('p');
-              const node2 = new math.expression.node.SymbolNode('p1');
-              const node3 = new math.expression.node.SymbolNode('p2');
-          }
-          else {
-              return node
-          }
-      });
-      console.log(transformed.toString());
-      let eq = nerdamer(transformed.toString()+"=0");
-      console.log(eq.solveFor("p1").toString())
+    zip = (time , values , names) => {
+        return time.map((t,i) => {
+            const obj = {
+                time : t.toFixed(3)
+            };
+            names.forEach((name,ind) => {
+                obj[name] = values[i][ind]
+            });
+            return obj
+        })
+    };
+
+    concat = (arrays) => {
+        let newArr = [];
+        arrays[0].forEach((cart , i) => {
+            newArr.push(arrays.map((arr) => arr[i]).reduce((a,b) => a.concat(b)))
+        });
+        return newArr
+    };
+
+
+    test = () => {
+      // let node = math.parse('2*y*y2 - (y1)^2 - 1');
+      // console.log(node.toString());
+      // const transformed = node.transform(function (node, path, parent) {
+      //     if (node.isSymbolNode && node.name === 'y2') {
+      //         const node1 = new math.expression.node.SymbolNode('p');
+      //         const node2 = new math.expression.node.SymbolNode('p1');
+      //         return new math.expression.node.OperatorNode('*','mul',[node1,node2])
+      //     }
+      //     if (node.isSymbolNode && node.name === 'y1') {
+      //         return new math.expression.node.SymbolNode('p');
+      //     }
+      //     if (node.isSymbolNode && node.name === 'y3') {
+      //         const node1 = new math.expression.node.SymbolNode('p');
+      //         const node2 = new math.expression.node.SymbolNode('p1');
+      //         const node3 = new math.expression.node.SymbolNode('p2');
+      //     }
+      //     else {
+      //         return node
+      //     }
+      // });
+      // console.log(transformed.toString());
+      // let eq = nerdamer(transformed.toString()+"=0");
+      // console.log(eq.solveFor("p1").toString())
+        console.log(math.eval("pi"))
       // console.log(eq.solveFor('p1').toString())
   };
 
@@ -195,7 +221,7 @@ class App extends Component {
         {
             render : () => {
             return (
-                <Modal trigger={<div><Icon name='book' size='small'/>Approach</div>}>
+                <Modal trigger={<div><Icon name='book' size='small'/>Указания к решению</div>}>
                     <Modal.Header align="center">Уравнения с разделяющимися переменными</Modal.Header>
                     <Modal.Content scrolling>
                         <div align="center"><Image wrapped src={i21}/></div>
@@ -208,7 +234,7 @@ class App extends Component {
         {
             render : () => {
                 return (
-                    <Modal trigger={<div><Icon name='book' size='small'/>Approach</div>}>
+                    <Modal trigger={<div><Icon name='book' size='small'/>Указания к решению</div>}>
                         <Modal.Header>Однородные уравнения</Modal.Header>
                         <Modal.Content image scrolling>
                             <Image size='medium' src='https://react.semantic-ui.com/images/wireframe/image.png' wrapped />
@@ -230,7 +256,7 @@ class App extends Component {
         {
             render : () => {
                 return (
-                    <Modal trigger={<div><Icon name='book' size='small'/>Approach</div>}>
+                    <Modal trigger={<div><Icon name='book' size='small'/>Указания к решению</div>}>
                         <Modal.Header>Линейные уравнения первого порядка</Modal.Header>
                         <Modal.Content image scrolling>
                             <Image size='medium' src='https://react.semantic-ui.com/images/wireframe/image.png' wrapped />
@@ -252,7 +278,7 @@ class App extends Component {
         {
             render : () => {
                 return (
-                    <Modal trigger={<div><Icon name='book' size='small'/>Approach</div>}>
+                    <Modal trigger={<div><Icon name='book' size='small'/>Указания к решению</div>}>
                         <Modal.Header>Системы с постоянными коэф одн</Modal.Header>
                         <Modal.Content image scrolling>
                             <Image size='medium' src='https://react.semantic-ui.com/images/wireframe/image.png' wrapped />
@@ -274,7 +300,7 @@ class App extends Component {
         {
             render : () => {
                 return (
-                    <Modal trigger={<div><Icon name='book' size='small'/>Approach</div>}>
+                    <Modal trigger={<div><Icon name='book' size='small'/>Указания к решению</div>}>
                         <Modal.Header>Системы с постоянными коэф неодн</Modal.Header>
                         <Modal.Content image scrolling>
                             <Image size='medium' src='https://react.semantic-ui.com/images/wireframe/image.png' wrapped />
@@ -296,29 +322,7 @@ class App extends Component {
         {
             render : () => {
                 return (
-                    <Modal trigger={<div><Icon name='book' size='small'/>Approach</div>}>
-                        <Modal.Header>Системы с постоянными коэф неодн</Modal.Header>
-                        <Modal.Content image scrolling>
-                            <Image size='medium' src='https://react.semantic-ui.com/images/wireframe/image.png' wrapped />
-
-                            <Modal.Description>
-                                <Header>Modal Header</Header>
-                                <p>This is an example of expanded content that will cause the modal's dimmer to scroll</p>
-                            </Modal.Description>
-                        </Modal.Content>
-                        <Modal.Actions>
-                            <Button primary>
-                                Proceed <Icon name='chevron right' />
-                            </Button>
-                        </Modal.Actions>
-                    </Modal>
-                )
-            }
-        },
-        {
-            render : () => {
-                return (
-                    <Modal trigger={<div><Icon name='book' size='small'/>Approach</div>}>
+                    <Modal trigger={<div><Icon name='book' size='small'/>Указания к решению</div>}>
                         <Modal.Header>Системы с переменными коэф одн</Modal.Header>
                         <Modal.Content image scrolling>
                             <Image size='medium' src='https://react.semantic-ui.com/images/wireframe/image.png' wrapped />
@@ -340,7 +344,7 @@ class App extends Component {
         {
             render : () => {
                 return (
-                    <Modal trigger={<div><Icon name='book' size='small'/>Approach</div>}>
+                    <Modal trigger={<div><Icon name='book' size='small'/>Указания к решению</div>}>
                         <Modal.Header>Системы с переменными коэф неодн</Modal.Header>
                         <Modal.Content image scrolling>
                             <Image size='medium' src='https://react.semantic-ui.com/images/wireframe/image.png' wrapped />
@@ -362,7 +366,7 @@ class App extends Component {
         {
             render : () => {
                 return (
-                    <Modal trigger={<div><Icon name='book' size='small'/>Approach</div>}>
+                    <Modal trigger={<div><Icon name='book' size='small'/>Указания к решению</div>}>
                         <Modal.Header>Уравнения n-го порядка с постоянными коэф</Modal.Header>
                         <Modal.Content image scrolling>
                             <Image size='medium' src='https://react.semantic-ui.com/images/wireframe/image.png' wrapped />
@@ -384,8 +388,73 @@ class App extends Component {
         {
             render : () => {
                 return (
-                    <Modal trigger={<div><Icon name='book' size='small'/>Approach</div>}>
+                    <Modal trigger={<div><Icon name='book' size='small'/>Указания к решению</div>}>
                         <Modal.Header>Уравнения n-го порядка с переменными коэф</Modal.Header>
+                        <Modal.Content image scrolling>
+                            <Image size='medium' src='https://react.semantic-ui.com/images/wireframe/image.png' wrapped />
+
+                            <Modal.Description>
+                                <Header>Modal Header</Header>
+                                <p>This is an example of expanded content that will cause the modal's dimmer to scroll</p>
+                            </Modal.Description>
+                        </Modal.Content>
+                        <Modal.Actions>
+                            <Button primary>
+                                Proceed <Icon name='chevron right' />
+                            </Button>
+                        </Modal.Actions>
+                    </Modal>
+                )
+            }
+        },
+        {
+            render : () => {
+                return (
+                    <Modal trigger={<div><Icon name='book' size='small'/>Указания к решению</div>}>
+                        <Modal.Header>Уравенния разрешенные относительно y'</Modal.Header>
+                        <Modal.Content image scrolling>
+                            <Image size='medium' src='https://react.semantic-ui.com/images/wireframe/image.png' wrapped />
+
+                            <Modal.Description>
+                                <Header>Modal Header</Header>
+                                <p>This is an example of expanded content that will cause the modal's dimmer to scroll</p>
+                            </Modal.Description>
+                        </Modal.Content>
+                        <Modal.Actions>
+                            <Button primary>
+                                Proceed <Icon name='chevron right' />
+                            </Button>
+                        </Modal.Actions>
+                    </Modal>
+                )
+            }
+        },
+        {
+            render : () => {
+                return (
+                    <Modal trigger={<div><Icon name='book' size='small'/>Указания к решению</div>}>
+                        <Modal.Header>Нелинейные системы</Modal.Header>
+                        <Modal.Content image scrolling>
+                            <Image size='medium' src='https://react.semantic-ui.com/images/wireframe/image.png' wrapped />
+
+                            <Modal.Description>
+                                <Header>Modal Header</Header>
+                                <p>This is an example of expanded content that will cause the modal's dimmer to scroll</p>
+                            </Modal.Description>
+                        </Modal.Content>
+                        <Modal.Actions>
+                            <Button primary>
+                                Proceed <Icon name='chevron right' />
+                            </Button>
+                        </Modal.Actions>
+                    </Modal>
+                )
+            }
+        },{
+            render : () => {
+                return (
+                    <Modal trigger={<div><Icon name='book' size='small'/>Указания к решению</div>}>
+                        <Modal.Header>Уравенния разрешенные относительно y'</Modal.Header>
                         <Modal.Content image scrolling>
                             <Image size='medium' src='https://react.semantic-ui.com/images/wireframe/image.png' wrapped />
 
@@ -903,7 +972,169 @@ class App extends Component {
                     <LinearPlot state={this.state} cmd={14}/>
                 </div>
             )
-        }
+        },
+        {menuItem : "Уравнения разрешенные относительно y'",render : () => (
+                <div className="App">
+                    <Formik enableReinitialize initialValues={{start:0,f:""}} key={1}
+                            onSubmit={(values)=>{
+                                const exist = (arr) => {
+                                    for ( let field of arr){
+                                        if (values[field] === undefined) return false;
+                                    }
+                                    return true
+                                };
+                                if(exist(['f'])){
+                                    self.worker.postMessage({...values,cmd:15})
+                                }else{
+                                    alert(" field errors")
+                                }
+                            }}
+                    >
+                        {({errors,touched,values})=>(
+                            <Form>
+                                <div className="App" style={{margin:"20px"}}>
+                                    Стартовая точка : {' '} <Field type="number" name="start" style={{width:"50px"}}/>
+                                </div>
+                                {"y' = "}
+                                <Field type="f" name="f" placeholder="f(x,y)"/>
+                                <div>
+                                    {`y(${values.start}) = `}
+                                    <Field type="text" name={`start_value`}/>
+                                </div>
+                                <div>
+                                    {`y(x) = `}
+                                    <Field type="text" name={`user`}/>
+                                </div>
+                                <div>
+                                    <Button type="submit">
+                                        Submit
+                                    </Button>
+                                </div>
+                            </Form>
+                        )}
+                    </Formik>
+                    <LinearPlot state={this.state} cmd={15}/>
+                </div>
+            )
+        },
+        {menuItem : "Нелинейные системы",render : () => (
+                <div className="App">
+                    <Formik enableReinitialize initialValues={{start:0,f:""}} key={1}
+                            onSubmit={(values)=>{
+                                self.worker.postMessage({...values,cmd:16})
+                            }}
+                    >
+                        {({errors,touched,values})=>(
+                            <Form>
+                                <div className="App" style={{margin:"20px"}}>
+                                    Стартовая точка : {' '} <Field type="number" name="start" style={{width:"50px"}}/>
+                                </div>
+                                {"y' = "}
+                                <Field type="f" name="f" placeholder="f(x,y,z)"/>
+                                {`y(${values.start}) = `}
+                                <Field type="text" name={`start_value_y`}/>
+                                <div>
+                                    {"z' = "}
+                                    <Field type="g" name="g" placeholder="g(x,y,z)"/>
+                                    {`z(${values.start}) = `}
+                                    <Field type="text" name={`start_value_z`}/>
+                                </div>
+                                <div>
+                                    {`y(x) = `}
+                                    <Field type="text" name={`user_y`}/>
+                                </div>
+                                <div>
+                                    {`z(x) = `}
+                                    <Field type="text" name={`user_z`}/>
+                                </div>
+                                <div>
+                                    <Button type="submit">
+                                        Submit
+                                    </Button>
+                                </div>
+                            </Form>
+                        )}
+                    </Formik>
+                    {!!this.state['16'] ?(()=>{
+                        const data = this.state['16'];
+                        const time = data.time;
+                        const diff = data.diff;
+                        const user = data.user;
+                        const res = data.result;
+                        const number = data.data.number;
+                        const conc = this.concat([diff,user,res]);
+                        let names = [["dy","y_user","y_computed"],["dz","z_user","z_computed"]];
+                        names = names.slice(0,number);
+                        let new_names = [];
+                        for(let i = 0 ; i < 3; i++){
+                            names.forEach((name_arr) =>{
+                                new_names.push(name_arr[i])
+                            })
+                        }
+                        const zipped = this.zip(time,conc,new_names);
+                        return (
+                            names.map((name_arr) => {
+                                return (
+                                    <div align="center">
+                                        <LineChart width={730} height={250} data={zipped}>
+                                            <CartesianGrid strokeDasharray="3 3" />
+                                            <XAxis dataKey="time" />
+                                            <YAxis />
+                                            <Tooltip />
+                                            <Legend layout="vertical" align="right" verticalAlign="top"/>
+                                            <Line type="linear" dot={false} dataKey={name_arr[0]} stroke="#00ff00" />
+                                            <Line type="linear" dot={false} dataKey={name_arr[1]} stroke="#ff0000" />
+                                            <Line type="linear" dot={false} dataKey={name_arr[2]} stroke="#0000ff" />
+                                        </LineChart>
+                                    </div>
+                                )
+                            })
+                        )
+                    })() : null}
+                </div>
+            )
+        },
+        {menuItem : "Кравевая задача",render : () => (
+                <div className="App">
+                    <Formik enableReinitialize initialValues={{start:"",f:""}} key={1}
+                            onSubmit={(values)=>{
+                                self.worker.postMessage({...values,cmd:17})
+                            }}
+                    >
+                        {({errors,touched,values})=>(
+                            <Form>
+                                <div>
+                                    <Field type="text" name="a" placeholder="a(x)" validate={this.valaidate_x}
+                                        className={errors.a ? 'error' : "input"}/>
+                                    {"y'' + "}
+                                    <Field type="text" name="p" placeholder="p(x)" />
+                                    {"y' + "}
+                                    <Field type="text" name="q" placeholder="q(x)"/>
+                                    {"y = "}
+                                    <Field type="text" name="f" placeholder="f(x)"/>
+                                </div>
+                                <div>
+                                    y(<Field type="text" name="start" placeholder="a"/>) =
+                                    <Field type="text" name={`start_value`} placeholder="A"/>
+                                    y(<Field type="text" name="end" placeholder="b"/>) =
+                                    <Field type="text" name={`end_value`} placeholder="B"/>
+                                </div>
+                                <div>
+                                    {`y(x) = `}
+                                    <Field type="text" name={`user`}/>
+                                </div>
+                                <div>
+                                    <Button type="submit">
+                                        Submit
+                                    </Button>
+                                </div>
+                            </Form>
+                        )}
+                    </Formik>
+                    <LinearPlot state={this.state} cmd={17}/>
+                </div>
+            )
+        },
     ];
     const { visible } = this.state;
     return (
@@ -944,7 +1175,7 @@ class App extends Component {
                     <Menu attached='top' position='right'>
                     <Menu.Menu position='right'>
                         <Menu.Item name='settings' active={visible}>
-                        <Modal trigger={<div><Icon name='settings' size='small'/>Settings</div>}>
+                        <Modal trigger={<div><Icon name='settings' size='small'/>Настройки</div>}>
                             <h2>Длина отрезка - {this.state.length}</h2>
                             <input type="range" name="len" min="1" max="10" value={this.state.length} step="0.1" className="slider" onChange={(e)=>{
                                 this.setState({length:e.target.value});

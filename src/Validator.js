@@ -3,7 +3,7 @@ import * as math from 'mathjs'
 class Validator{
     validate_vars(var_arr){
         const accepted_fun = [
-            'cos','sin','e','exp','ln'
+            'cos','sin','e','exp','log','pi','sqrt','tan','cot'
         ];
         return (expr) => {
             let node;

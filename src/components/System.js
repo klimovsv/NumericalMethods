@@ -217,9 +217,9 @@ export default class System extends Component{
                                         <YAxis />
                                         <Tooltip />
                                         <Legend layout="vertical" align="right" verticalAlign="top"/>
-                                        <Line type="linear" dot={false} dataKey={name_arr[0]} stroke="#8884d8" />
-                                        <Line type="linear" dot={false} dataKey={name_arr[1]} stroke="#82ca9d" />
-                                        <Line type="linear" dot={false} dataKey={name_arr[2]} stroke="#82ca9d" />
+                                        <Line type="linear" dot={false} dataKey={name_arr[0]} stroke="#00ff00" />
+                                        <Line type="linear" dot={false} dataKey={name_arr[1]} stroke="#ff0000" />
+                                        <Line type="linear" dot={false} dataKey={name_arr[2]} stroke="#0000ff" />
                                     </LineChart>
                                 </div>
                             )
