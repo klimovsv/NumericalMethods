@@ -1,4 +1,7 @@
 import * as math from 'mathjs'
+import React from "react";
+
+
 
 class Validator{
     validate_vars(var_arr){

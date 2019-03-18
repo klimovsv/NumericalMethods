@@ -3,6 +3,17 @@ import {Field, Form, Formik} from "formik";
 import {Button} from "semantic-ui-react";
 import {CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis} from "recharts";
 import Validator from '../Validator'
+import styled from "styled-components";
+
+
+const MyField = styled(Field)`
+    margin-left:8px;
+    margin-top:5px;
+    margin-bottom:5px;
+    border:1px solid #001c91;
+    border-radius:4px;
+    width:100px;
+`;
 
 export default class System extends Component{
     constructor(props){
@@ -108,13 +119,13 @@ export default class System extends Component{
                                 <Form >
                                     <div className="App" style={{margin:"15px"}}>
                                         {'Размерность системы : '}
-                                        <Field component="select" name="number">
+                                        <MyField component="select" name="number">
                                             <option value="2">2</option>
                                             <option value="3">3</option>
-                                        </Field>
+                                        </MyField>
                                     </div>
                                     <div className="App" style={{margin:"15px"}}>
-                                        Стартовая точка : {' '} <Field type="number" name="start" style={{width:"50px"}}/>
+                                        Стартовая точка : {' '} <MyField type="number" name="start" style={{width:"50px"}}/>
                                     </div>
                                     {values.vars.map((variable,index) => {
                                         if (index < values.number){
@@ -126,7 +137,7 @@ export default class System extends Component{
                                                             if (ind < values.number){
                                                                 return (
                                                                     <span key={index*values.number+ ind}>
-                                                                            <Field type="text" name={`vals.${index}.${ind}`} style={{width:'50px'}}
+                                                                            <MyField type="text" name={`vals.${index}.${ind}`} style={{width:'50px'}}
                                                                                    className={
                                                                                        !!errors.vals &&
                                                                                        !!errors.vals[index*values.number + ind]? 'input error' : 'text-input'
@@ -143,7 +154,7 @@ export default class System extends Component{
                                                         <span key={index*values.number + values.number}>
                                                             {' + '}
                                                             {/*{console.log(errors.vals)}*/}
-                                                            <Field type="text"
+                                                            <MyField type="text"
                                                                    name={`vals.${index}.${values.number}`}
                                                                    style={{width:'50px'}}
                                                                    placeholder="f(t)"
@@ -156,8 +167,8 @@ export default class System extends Component{
                                                     )}
                                                     {
                                                         <span>
-                                                            {`${values.vars[index]}(${values.start}) = `}
-                                                            <Field type="text" name={`vals.start.${index}`}
+                                                            {` ,    ${values.vars[index]}(${values.start}) = `}
+                                                            <MyField type="text" name={`vals.start.${index}`}
                                                                    className={
                                                                        !!errors.start &&
                                                                        !!errors.start[index]? 'input error' : 'text-input'
@@ -172,21 +183,23 @@ export default class System extends Component{
                                         if (index < values.number){
                                             return (
                                                 <div key={index}>
-                                                    {`${values.vars[index]} = `}
+                                                    {`${values.vars[index]}(t) = `}
                                                     {
-                                                        <Field type="text" name={`user.${index}`}
+                                                        <MyField type="text" name={`user.${index}`}
                                                                className={
                                                                    !!errors.user &&
                                                                    !!errors.user[index]? 'input error' : 'text-input'
-                                                               }/>
+                                                               } style={{width:"300px"}}/>
                                                     }
                                                 </div>
                                             )
                                         }
                                     })}
-                                    <Button type="submit">
-                                        Submit
-                                    </Button>
+                                    <div>
+                                        <Button  primary type="submit" style={{margin:"10px"}}>
+                                            Посчитать
+                                        </Button>
+                                    </div>
                                 </Form>
                             )
                         }}/>
@@ -197,6 +210,9 @@ export default class System extends Component{
                     const user = data.user;
                     const res = data.result;
                     const number = data.data.number;
+                    console.log(Math.max.apply(null, diff.map(v=>v[0])));
+                    console.log(Math.max.apply(null, diff.map(v=>v[1])));
+                    console.log(Math.max.apply(null, diff.map(v=>v[2])));
                     const conc = this.concat([diff,user,res]);
                     let names = [["dx","x_user","x_computed"],["dy","y_user","y_computed"],["dz","z_user","z_computed"]];
                     names = names.slice(0,number);
@@ -210,8 +226,8 @@ export default class System extends Component{
                     return (
                         names.map((name_arr) => {
                             return (
-                                <div align="center">
-                                    <LineChart width={730} height={250} data={zipped}>
+                                <div align="center" style={{'font-size':"12pt"}}>
+                                    <LineChart width={1000} height={400} data={zipped}>
                                         <CartesianGrid strokeDasharray="3 3" />
                                         <XAxis dataKey="time" />
                                         <YAxis />

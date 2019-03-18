@@ -38,11 +38,10 @@ export default class LinearPlot extends Component {
             let names = ["dy","y_user","y_computed"];
             const zipped = this.linear_zip(conc,names,time);
             names = [names];
-            console.log(zipped);
             return names.map((name_arr) => {
                     return (
-                        <div align="center">
-                            <LineChart width={730} height={250} data={zipped}>
+                        <div align="center" style={{'font-size':"12pt"}}>
+                            <LineChart width={1000} height={500} data={zipped}>
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis dataKey="time" />
                                 <YAxis />
