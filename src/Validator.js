@@ -6,7 +6,7 @@ import React from "react";
 class Validator{
     validate_vars(var_arr){
         const accepted_fun = [
-            'cos','sin','e','exp','log','pi','sqrt','tan','cot'
+            'cos','sin','e','exp','log','pi','sqrt','tan','cot','sec','sinh','cosh','tanh'
         ];
         return (expr) => {
             let node;
@@ -25,11 +25,8 @@ class Validator{
             node.traverse( node => {
                 switch (node.type) {
                     case 'SymbolNode':
-                        if (!var_arr.includes(node.name)){
+                        if (!var_arr.includes(node.name) && !accepted_fun.includes(node.name)){
                             error = "no variable"
-                        }
-                        if(accepted_fun.includes(node.name)){
-                            error = undefined
                         }
                         break;
                     default:
@@ -38,10 +35,6 @@ class Validator{
             });
             return error;
         }
-    }
-
-    validate_number(expr){
-        return this.validate_vars([])(expr)
     }
 }
 

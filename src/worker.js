@@ -625,7 +625,7 @@ self.addEventListener('message',(e) => {
                 const user_f = generate_func([], "x", [values.user]);
                 const initial = [values.start_value];
                 let funcs = generate_func(['y'],"x",[`${values.f}`]);
-                let f = values.f
+                let f = values.f;
                 let [result, user_res, diff, time] = runge_kutt({
                     start_time: values.start,
                     end_time: values.start + length,

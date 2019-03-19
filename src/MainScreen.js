@@ -15,11 +15,11 @@ import Latex from 'react-latex'
 import LinearPlot from "./components/LinearPlot";
 import $ from "jquery";
 import * as math from 'mathjs'
-import nerdamer from 'nerdamer/nerdamer.core'
-import 'nerdamer/Algebra'
-import 'nerdamer/Calculus'
-import 'nerdamer/Solve'
-import 'nerdamer/Extra'
+// import nerdamer from 'nerdamer/nerdamer.core'
+// import 'nerdamer/Algebra'
+// import 'nerdamer/Calculus'
+// import 'nerdamer/Solve'
+// import 'nerdamer/Extra'
 
 import i21 from './images/2.1.png'
 import i22 from './images/2.2.png'
@@ -61,8 +61,8 @@ import i148 from './images/14.8.png'
 import i149 from './images/14.9.png'
 import i1410 from './images/14.10.png'
 import i1411 from './images/14.11.png'
-import i14121 from './images/14.12.1.png'
-import i14122 from './images/14.12.2.png'
+import i14121 from './images/14.12.png'
+import i14122 from './images/14.12.png'
 import i1413 from './images/14.13.png'
 import i1414 from './images/14.14.png'
 import i1415 from './images/14.15.png'
@@ -132,7 +132,12 @@ class MainScreen extends React.Component {
 
     }
 
-    valaidate_x = Validator.validate_vars(['x']);
+    validate_x = Validator.validate_vars(['x']);
+    validate_t = Validator.validate_vars(['t']);
+    validate_x_y_z = Validator.validate_vars(['x','y','z']);
+    validate_y = Validator.validate_vars(['y']);
+    validate_z = Validator.validate_vars(['z']);
+    validate_n = Validator.validate_vars([]);
 
     componentDidMount() {
         this.worker = new MyWorker();
@@ -510,17 +515,17 @@ class MainScreen extends React.Component {
                                     </div>
 
                                     <MyField type="m" name="m" placeholder="M(x)" className={
-                                        !!errors.m && touched.m? 'input error' : 'text-input'
+                                        !!errors.m ? 'input error' : 'text-input'
                                     }/>
                                     <MyField type="n" name="n" placeholder="N(y)" className={
-                                        !!errors.n && touched.n? 'input error' : 'text-input'
+                                        !!errors.n ? 'input error' : 'text-input'
                                     }/>
                                     {" dx + "}
                                     <MyField type="p" name="p" placeholder="P(x)"className={
-                                        !!errors.p && touched.p? 'input error' : 'text-input'
+                                        !!errors.p ? 'input error' : 'text-input'
                                     }/>
                                     <MyField type="q" name="q" placeholder="Q(y)" className={
-                                        !!errors.q && touched.q? 'input error' : 'text-input'
+                                        !!errors.q ? 'input error' : 'text-input'
                                     }/>
                                     {" dy = 0 "}
                                     <div className="App">
@@ -1126,26 +1131,34 @@ class MainScreen extends React.Component {
                             {({errors,touched,values})=>(
                                 <Form>
                                     <div className="form-row" >
-                                        <MyField type="text" name="a" placeholder="a(x)" validate={this.valaidate_x}
-                                               className={errors.a ? 'error' : "form-control"}/>
+                                        <MyField type="text" name="a" placeholder="a(x)" validate={this.validate_x}
+                                               className={errors.a  ? 'error' : "input"}/>
                                         {"y'' + "}
-                                        <MyField type="text" name="p" placeholder="p(x)" />
+                                        <MyField type="text" name="p" placeholder="p(x)"validate={this.validate_x}
+                                                 className={errors.p  ? 'error' : "input"} />
                                         {"y' + "}
-                                        <MyField type="text" name="q" placeholder="q(x)"/>
+                                        <MyField type="text" name="q" placeholder="q(x)"validate={this.validate_x}
+                                                 className={errors.q  ? 'error' : "input"}/>
                                         {"y = "}
-                                        <MyField type="text" name="f" placeholder="f(x)"/>
+                                        <MyField type="text" name="f" placeholder="f(x)"validate={this.validate_x}
+                                                 className={errors.f  ? 'error' : "input"}/>
                                     </div>
                                     <div>
-                                        y (<MyField type="text" name="start" placeholder="a"/>) =
-                                        <MyField type="text" name={`start_value`} placeholder="A"/>
+                                        y (<MyField type="text" name="start" placeholder="a" validate={this.validate_n}
+                                                    className={errors.start  ? 'error' : "input"}/>) =
+                                        <MyField type="text" name={`start_value`} placeholder="A" validate={this.validate_n}
+                                                 className={errors.start_value  ? 'error' : "input"}/>
                                     </div>
                                     <div>
-                                        {`y (`}<MyField type="text" name="end" placeholder="b"/>) =
-                                        <MyField type="text" name={`end_value`} placeholder="B"/>
+                                        {`y (`}<MyField type="text" name="end" placeholder="b" validate={this.validate_n}
+                                                        className={errors.end  ? 'error' : "input"}/>) =
+                                        <MyField type="text" name={`end_value`} placeholder="B" validate={this.validate_n}
+                                                 className={errors.end_value ? 'error' : "input"}/>
                                     </div>
                                     <div>
                                         {`y(x) = `}
-                                        <MyField type="text" name={`user`}/>
+                                        <MyField type="text" name={`user`} style={{width:"300px"}} validate={this.validate_x}
+                                                 className={errors.user  ? 'error' : "input"}/>
                                     </div>
                                     <div>
                                         <Button  primary type="submit" style={{margin:"10px"}}>
@@ -1220,7 +1233,14 @@ class MainScreen extends React.Component {
                     </Menu.Item>
                         <Menu.Item name='faq' active={visible}>
                             <Modal trigger={<div><Icon name='question circle' size='small'/>Справка</div>}>
-
+                                <div style={{'font-size':'16pt','margin':'10px'}}>Для ввода доступны основные тригонометрические функции и константы( e, pi).
+                                   </div>
+                                <div style={{'font-size':'16pt','margin':'10px'}}>
+                                   Степень обозначается знаком ^.
+                                </div>
+                                <div style={{'font-size':'16pt','margin':'10px'}}>
+                                   Для получения решения, необходимо задать начальное условие, исходя из аналитического решения.
+                                </div>
                             </Modal>
                         </Menu.Item>
                         <Menu.Item >
